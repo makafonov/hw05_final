@@ -1,6 +1,6 @@
 <div class="post">
     {% load thumbnail %}
-        {% thumbnail post.image "783x339" crop="center" upscale=True as im %}
+    {% thumbnail post.image "783x339" crop="center" upscale=True as im %}
         <img src="{{ im.url }}">
     {% endthumbnail %}
 
@@ -13,25 +13,39 @@
         <div class="post_date">{{ post.pub_date|date:'d E Y г. G:i' }}</div>
     </div>
     <!-- Заголовог поста -->
-    <h2>
-        <a href="{% url 'post' username=post.author.username post_id=post.id %}">{{ post.get_header }}</a>
-    </h2>
+    <h2><a href="{% url 'post' username=post.author.username post_id=post.id %}">{{ post.get_header }}</a></h2>
 
     <div class="post_text">
         <p>{{ post.text|linebreaksbr }}</p>
     </div>
-    <div class="post_footer d-flex justify-content-end">
 
-        {% if post.comments.count %}
-            <div class="comments"><a href="#">{{ post.comments.count }} комментария</a></div>
+    <div class="post_footer d-flex">
+        <!-- Если пост относится к какому-нибудь сообществу, то отобразим ссылку на него через # -->
+        {% if post.group %}
+            <div class="group">
+                <a href="{% url 'group' post.group.slug %}">#{{ post.group.title }}</a>
+            </div>
         {% endif %}
 
-        <!-- Кнопка "Добавить комментарий" не показывается на странице с постом -->
-        {% if request.resolver_match.url_name != 'post' %}
-            <div class="add_comment"><a href="{% url 'post' username=post.author.username post_id=post.id %}">добавить комментарий →</a></div>
-        {% endif %}
-    </div>
-</div> <!-- /post -->
+        <div class="post_footer_end d-flex">
+            <!-- Ссылка на редактирование поста для автора -->
+            {% if user == post.author %}
+                <div class="comments"><a href="{% url 'post_edit' post.author.username post.id %}">редактировать</a></div>
+            {% endif %}
+
+            <!-- Отображение ссылки на комментарии -->
+            <div class="add_comment">
+                <a href="{% url 'post' post.author.username post.id %}">
+                    {% if post.comments.exists %}
+                        {{ post.comments.count }} комментариев →
+                    {% else%}
+                        добавить комментарий →
+                    {% endif %}
+                </a>
+            </div>
+        </div>
+    </div> <!-- /.post_footer -->
+</div> <!-- /.post -->
 
 {% if request.resolver_match.url_name == 'post' %}
     {% include 'includes/comments.html' with form=form items=items %}

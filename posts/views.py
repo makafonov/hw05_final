@@ -2,9 +2,10 @@ import datetime as dt
 
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import (get_list_or_404, get_object_or_404, redirect,
+                              render)
 
-from .forms import PostForm, CommentForm
+from .forms import CommentForm, PostForm
 from .models import Group, Post, User
 
 
@@ -17,8 +18,7 @@ def year(request):
 
 
 def index(request):
-    post_list = Post.objects.select_related(
-        'author').order_by('-pub_date').all()
+    post_list = Post.objects.select_related('author').all()
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -28,9 +28,8 @@ def index(request):
 
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
-    post_list = Post.objects.select_related('author').filter(
-        group=group).order_by('-pub_date')
-    paginator = Paginator(post_list, 10)
+    posts = get_list_or_404(Post, group=group)
+    paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     return render(request, 'group.html',
@@ -53,8 +52,8 @@ def profile(request, username):
     """Профиль пользователя."""
 
     author = get_object_or_404(User, username=username)
-    post_list = author.posts.all().order_by('-pub_date')
-    paginator = Paginator(post_list, 10)
+    posts = author.posts.all()
+    paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     return render(request, 'profile.html', {

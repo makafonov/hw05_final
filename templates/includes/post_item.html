@@ -21,10 +21,18 @@
         <p>{{ post.text|linebreaksbr }}</p>
     </div>
     <div class="post_footer d-flex justify-content-end">
-        <div class="comments"><a href="#">3 комментария</a></div>
+
+        {% if post.comments.count %}
+            <div class="comments"><a href="#">{{ post.comments.count }} комментария</a></div>
+        {% endif %}
+
         <!-- Кнопка "Добавить комментарий" не показывается на странице с постом -->
         {% if request.resolver_match.url_name != 'post' %}
             <div class="add_comment"><a href="{% url 'post' username=post.author.username post_id=post.id %}">добавить комментарий →</a></div>
         {% endif %}
     </div>
 </div> <!-- /post -->
+
+{% if request.resolver_match.url_name == 'post' %}
+    {% include 'includes/comments.html' with form=form items=items %}
+{% endif %}

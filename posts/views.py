@@ -4,14 +4,13 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import PostForm
+from .forms import PostForm, CommentForm
 from .models import Group, Post, User
 
 
 def year(request):
-    """
-    Добавляет переменную с текущим годом.
-    """
+    """Добавляет переменную с текущим годом."""
+
     today = dt.datetime.today()
     year = today.year
     return {'year': year}
@@ -40,6 +39,8 @@ def group_posts(request, slug):
 
 @login_required
 def new_post(request):
+    """Добавление нового поста."""
+
     form = PostForm(request.POST or None, files=request.FILES or None)
     if form.is_valid():
         form.instance.author = request.user
@@ -49,6 +50,8 @@ def new_post(request):
 
 
 def profile(request, username):
+    """Профиль пользователя."""
+
     author = get_object_or_404(User, username=username)
     post_list = author.posts.all().order_by('-pub_date')
     paginator = Paginator(post_list, 10)
@@ -62,15 +65,22 @@ def profile(request, username):
 
 
 def post_view(request, username, post_id):
+    """Просмотр одного поста."""
+
     post = get_object_or_404(Post, id=post_id)
+    form = CommentForm(request.POST or None)
     return render(request, 'post.html', {
         'post': post,
         'author': post.author,
+        'items': post.comments.all(),
+        'form': form
     })
 
 
 @login_required
 def post_edit(request, username, post_id):
+    """Редактирование поста."""
+
     if request.user.username != username:
         return redirect('index')
     post = get_object_or_404(Post, id=post_id)
@@ -95,3 +105,13 @@ def page_not_found(request, exception):
 
 def server_error(request):
     return render(request, 'misc/500.html', status=500)
+
+
+@login_required
+def add_comment(request, username, post_id):
+    form = CommentForm(request.POST or None)
+    if form.is_valid():
+        form.instance.author = request.user
+        form.instance.post_id = post_id
+        form.save()
+    return redirect('post', username=username, post_id=post_id)

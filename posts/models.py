@@ -31,3 +31,14 @@ class Post(models.Model):
 
     def get_header(self):
         return ' '.join(self.text.split()[:5])
+
+
+class Comment(models.Model):
+    post = models.ForeignKey(Post,
+                             on_delete=models.CASCADE,
+                             related_name='comments')
+    author = models.ForeignKey(User,
+                               on_delete=models.CASCADE,
+                               related_name='comments')
+    text = models.TextField()
+    created = models.DateTimeField('comment created date', auto_now_add=True)

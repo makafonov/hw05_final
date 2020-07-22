@@ -1,0 +1,28 @@
+<div class="info d-flex">
+    <div class="img"></div>
+    <div class="info_links d-flex flex-column">
+        <!-- Имя автора -->
+        <h2>
+            {% if author.get_full_name %}
+                {{ author.get_full_name }}
+            {% endif %}
+        </h2>
+        <!-- username автора -->
+        <h3>
+            @{{ author.username }}
+        </h3>
+        <div class="info_links_urls">
+            <div>Подписчиков: </div>
+            <div>Подписан: </div>
+            <!-- Количество записей -->
+            <div>Записей: {{ author.posts.count }}</div>
+        </div>
+
+    </div>
+    <div class="info_button d-flex align-items-end">
+        <ul>
+            <li><a href="#">написать</a></li>
+            <li class="sep"><a href="#">подписаться →</a></li>
+        </ul>
+    </div>
+</div>

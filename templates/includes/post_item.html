@@ -1,0 +1,25 @@
+<div class="post">
+    <div class="post_info d-flex">
+        <!-- Автор поста -->
+        <div class="post_author">
+            <a href="{% url 'profile' username=post.author.username %}">@{{ post.author.username }}</a>
+        </div>
+        <!-- Дата поста -->
+        <div class="post_date">{{ post.pub_date|date:'d E Y г. G:i' }}</div>
+    </div>
+    <!-- Заголовог поста -->
+    <h2>
+        <a href="{% url 'post' username=post.author.username post_id=post.id %}">{{ post.get_header }}</a>
+    </h2>
+
+    <div class="post_text">
+        <p>{{ post.text|linebreaksbr }}</p>
+    </div>
+    <div class="post_footer d-flex justify-content-end">
+        <div class="comments"><a href="#">3 комментария</a></div>
+        <!-- Кнопка "Добавить комментарий" не показывается на странице с постом -->
+        {% if request.resolver_match.url_name != 'post' %}
+            <div class="add_comment"><a href="{% url 'post' username=post.author.username post_id=post.id %}">добавить комментарий →</a></div>
+        {% endif %}
+    </div>
+</div> <!-- /post -->

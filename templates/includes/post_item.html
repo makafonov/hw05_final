@@ -1,4 +1,9 @@
 <div class="post">
+    {% load thumbnail %}
+        {% thumbnail post.image "783x339" crop="center" upscale=True as im %}
+        <img src="{{ im.url }}">
+    {% endthumbnail %}
+
     <div class="post_info d-flex">
         <!-- Автор поста -->
         <div class="post_author">

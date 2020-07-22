@@ -111,7 +111,7 @@ class UserTest(TestCase):
 
     def test_404_page(self):
         """
-        Возвращает ли сервер код 404, если страница не найдена.
+        Сервер возвращает код 404, если страница не найдена.
         """
         response = self.client.get('new_unknown_url/')
         self.assertEqual(response.status_code, 404)

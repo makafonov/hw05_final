@@ -22,7 +22,13 @@
     <div class="info_button d-flex align-items-end">
         <ul>
             <li><a href="#">написать</a></li>
-            <li class="sep"><a href="#">подписаться →</a></li>
+
+            {% if following %}
+                <li class="sep"><a href="{% url 'profile_unfollow' author %}">отписаться →</a></li>
+            {% else %}
+                <li class="sep"><a href="{% url 'profile_follow' author %}">подписаться →</a></li>
+            {% endif %}
+
         </ul>
     </div>
 </div>

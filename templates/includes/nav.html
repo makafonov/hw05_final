@@ -1,48 +1,39 @@
-<div class="container top_header_area">
-    <div class="row">
-        <div class="col-12 d-flex justify-content-end">
-            {% if user.is_authenticated %}
-                <ul>
-                    <li>Пользователь: <a href="{% url 'profile' username=user.username %}">{{ user.username }}</a></li>
-                    <li class="sep"><a href="{% url 'new_post' %}">Новая запись</a></li>
-                    <li class="dblsep"><a href="{% url 'password_change' %}">Изменить пароль</a></li>
-                    <li class="sep"><a href="{% url 'logout' %}">Выйти</a></li>
-                </ul>
-            {% else %}
-                <ul>
-                    <li><a href="{% url 'login' %}">Войти</a></li>
-                    <li class="sep"><a href="{% url 'signup' %}">Регистрация</a></li>
-                </ul>
-            {% endif %}
+<header>
+    <div class="container top_header_area">
+        <div class="row">
+            <div class="col-12 d-flex justify-content-end">
+                {% if user.is_authenticated %}
+                    <ul>
+                        <li>Пользователь: <a href="{% url 'profile' username=user.username %}">{{ user.username }}</a></li>
+                        <li class="sep"><a href="{% url 'new_post' %}">Новая запись</a></li>
+                        <li class="dblsep"><a href="{% url 'password_change' %}">Изменить пароль</a></li>
+                        <li class="sep"><a href="{% url 'logout' %}">Выйти</a></li>
+                    </ul>
+                {% else %}
+                    <ul>
+                        <li><a href="{% url 'login' %}">Войти</a></li>
+                        <li class="sep"><a href="{% url 'signup' %}">Регистрация</a></li>
+                    </ul>
+                {% endif %}
+            </div>
         </div>
     </div>
-</div>
 
-
-<header class="header_area">
-    <nav class="navbar navbar-expand-lg">
+    <nav class="navbar navbar-expand-md navbar-custom">
         <div class="container">
-            <div class="logo_area d-flex justify-content-center">
-                <a href="{% url 'index' %}" class="logo">Ya<span>tube</span></a>
+            <div class="navbar-logo">
+                <a href="{% url 'index' %}" class="d-flex">Ya<span>tube</span></a>
             </div>
-
-            <ul class="navbar-nav d-flex">
-                <li class="nav-item active">
-                    <a class="nav-link" href="{% url 'index' %}">Блог</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Программирование</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Администрирование</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'contacts' %}">Контакты</a>
-                </li>
-                <li class="nav-item search_button">
-                    <i class="fa fa-search" aria-hidden="true"></i>
-                </li>
-            </ul>
-        </div> <!-- /.container-->
+            <div class="navbar-collapse collapse w-100">
+                <ul class="nav navbar-nav ml-auto w-100 justify-content-end">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'index' %}">Блог</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Программирование</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Администрирование</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'contacts' %}">Контакты</a></li>
+                    <li class="nav-item"><a class="nav-link last-link" href="#"><i class="fa fa-search"
+                                aria-hidden="true"></i></a></li>
+                </ul>
+            </div>
+        </div>
     </nav>
 </header>

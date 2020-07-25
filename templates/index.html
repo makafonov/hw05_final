@@ -12,14 +12,16 @@
                 <div class="content-header">
                     <h1>Последние обновления на сайте</h1>
                 </div>
-
-                <!-- Вывод ленты записей -->
-                {% for post in page %}
-                    {% include 'includes/post_item.html' with post=post %}
-                    {% if not forloop.last %}
-                        <div class="separator d-flex justify-content-center">...</div>
-                    {% endif %}
-                {% endfor %}
+                {% load cache %}
+                {% cache 20 index_page %}
+                    <!-- Вывод ленты записей -->
+                    {% for post in page %}
+                        {% include 'includes/post_item.html' with post=post %}
+                        {% if not forloop.last %}
+                            <div class="separator d-flex justify-content-center">...</div>
+                        {% endif %}
+                    {% endfor %}
+                {% endcache %}
             </div> <!-- /posts -->
         </div> <!-- /col-9 -->
 

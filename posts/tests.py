@@ -1,34 +1,55 @@
+import tempfile
 from urllib.parse import urljoin
 
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
+from sorl.thumbnail import get_thumbnail
 
-from .models import Post, User
+from .models import Post, User, Group
+from django.db.models.fields.files import ImageFieldFile
 
 
+@override_settings(CACHES={
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+})
 class UserTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(username='sarah',
                                              email='connor.s@skynet.com',
                                              password='12345')
+        self.group = Group.objects.create(slug='test', title='Test',
+                                          description='test group')
         self.post = Post.objects.create(text='Тестовый пост Сары!',
-                                        author=self.user)
+                                        author=self.user,
+                                        group=self.group)
         self.client.force_login(self.user)
         self.anon_client = Client()
 
-        self.urls_for_created_post = {
+    def generate_urls_for_tests(self, default=True, post=None, name=None):
+        if default:
+            post = self.post
+        urls = {
             'index':
                 reverse('index'),
             'profile':
-                reverse('profile', kwargs={'username': self.post.author}),
+                reverse('profile', kwargs={'username': post.author}),
             'post':
                 reverse('post',
                         kwargs={
-                            'username': self.post.author,
-                            'post_id': self.post.id
-                        })
+                            'username': post.author,
+                            'post_id': post.id
+                        }),
+            'group':
+                reverse('group', kwargs={
+                    'slug': self.group.slug
+                })
         }
+        if name:
+            return urls[name]
+        return urls
 
     def test_user_profile(self):
         """
@@ -36,7 +57,7 @@ class UserTest(TestCase):
         страница (profile).
         """
 
-        response = self.client.get(self.urls_for_created_post['profile'])
+        response = self.client.get(self.generate_urls_for_tests(name='profile'))
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response.context['author'], User)
         self.assertEqual(response.context['author'].username,
@@ -47,11 +68,11 @@ class UserTest(TestCase):
 
         response = self.client.post(
             reverse('new_post'),
-            data={'text': 'Поехали!'},
+            data={'text': 'Поехали!', 'group': self.group.id},
             follow=True
         )
         self.assertEqual(response.status_code, 200)
-        response = self.client.get(self.urls_for_created_post['profile'])
+        response = self.client.get(self.generate_urls_for_tests(name='profile'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['paginator'].count, 2)
         self.assertIsInstance(response.context['author'], User)
@@ -87,7 +108,7 @@ class UserTest(TestCase):
         (profile), и на отдельной странице поста (post)
         """
 
-        for url in self.urls_for_created_post.values():
+        for url in self.generate_urls_for_tests().values():
             response = self.client.get(url)
             self.assertContains(response, self.post.text, status_code=200)
 
@@ -103,15 +124,33 @@ class UserTest(TestCase):
             kwargs={'username': self.post.author, 'post_id': self.post.id}
         )
         response = self.client.post(url,
-                                    data={'text': modded_text},
+                                    data={'text': modded_text, 'group': self.group.id},
                                     follow=True)
-        for url in self.urls_for_created_post.values():
+        for url in self.generate_urls_for_tests().values():
             response = self.client.get(url)
             self.assertContains(response, modded_text, status_code=200)
 
     def test_404_page(self):
-        """
-        Сервер возвращает код 404, если страница не найдена.
-        """
+        """Сервер возвращает код 404, если страница не найдена."""
+
         response = self.client.get('new_unknown_url/')
         self.assertEqual(response.status_code, 404)
+
+    def test_page_with_image(self):
+        """На страницах есть тэг img."""
+
+        with tempfile.TemporaryDirectory() as temp_directory:
+            with override_settings(MEDIA_ROOT=temp_directory):
+                with open('posts/tests/test.jpg', 'rb') as img:
+                    payload = {'group': self.group.id, 'text': 'post with image', 'image': img}
+                    response = self.client.post(reverse('new_post'), data=payload, follow=True)
+                    self.assertEqual(response.status_code, 200)
+        latest_post = Post.objects.latest('pub_date')
+
+        for url in self.generate_urls_for_tests(False, latest_post).values():
+            response = self.client.get(url)
+            self.assertContains(response, '<img', status_code=200)
+            self.assertIsInstance(response.context['post'].image, ImageFieldFile)
+
+            img = get_thumbnail(latest_post.image, "783x339", crop="center", upscale=True)
+            self.assertContains(response, img.url)

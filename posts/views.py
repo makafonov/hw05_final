@@ -14,8 +14,8 @@ def year(request):
     """Добавляет переменную с текущим годом."""
 
     today = dt.datetime.today()
-    year = today.year
-    return {'year': year}
+    current_year = today.year
+    return {'year': current_year}
 
 
 def index(request):
@@ -30,7 +30,7 @@ def index(request):
 
 
 def group_posts(request, slug):
-    """Страница группы. """
+    """Страница группы."""
 
     group = get_object_or_404(Group, slug=slug)
     posts = get_list_or_404(Post, group=group)
@@ -132,14 +132,12 @@ def add_comment(request, username, post_id):
 
 @login_required
 def follow_index(request):
-    # follow = get_list_or_404(Follow, user=request.user)
-    # posts = get_list_or_404(Post, author_id__in=follow.author_id)
-    authors_id = Follow.objects.values_list('author_id').filter(
-        user=request.user)
-    # не работает
-    # authors = Follow.objects.filter(user=request.user)
-    # authors_id = authors.author_id
-    posts = Post.objects.filter(author_id__in=authors_id)
+    """Избранные авторы. Главная страница"""
+
+    # author_ids = Follow.objects.values_list('author_id').filter(
+    #     user=request.user)
+    # posts = Post.objects.filter(author_id__in=author_ids)
+    posts = Post.objects.filter(author__in=request.user.follower.all().values_list('author'))
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -155,34 +153,27 @@ def follow_index(request):
 def profile_follow(request, username):
     """Подписка на автора."""
 
-    # не подписываюсь на самого себя, и уже не подписан на автора
     if request.user.username == username:
         return redirect('profile', username=username)
     new_author = get_object_or_404(User, username=username)
-    existing_follows = Follow.objects.filter(user=request.user)
-    for follow in existing_follows:
-        if new_author.id == follow.author_id:
-            return redirect('profile', username=username)
-
-    Follow.objects.create(author_id=new_author.id, user_id=request.user.id)
-    return redirect('follow_index')
+    follow = request.user.follower.all().filter(author=new_author)
+    if not follow:
+        Follow.objects.create(author_id=new_author.id, user_id=request.user.id)
+        return redirect('follow_index')
+    else:
+        print('уже подписан')
+        return redirect('profile', username=username)
 
 
 @login_required
 def profile_unfollow(request, username):
     """Отписка от графомана."""
 
-    # не отписываюсь от самого себя, и являюсь подписчиком
     if request.user.username == username:
         return redirect('profile', username=username)
     existing_author = get_object_or_404(User, username=username)
-    existing_follows = Follow.objects.filter(user=request.user)
-    follower = False
-    for follow in existing_follows:
-        if existing_author.id == follow.author_id:
-            follower = True
-
-    if follower:
+    follow = request.user.follower.all().filter(author=existing_author)
+    if follow:
         follow.delete()
         return redirect('follow_index')
     else:

@@ -12,8 +12,8 @@
             @{{ author.username }}
         </h3>
         <div class="info_links_urls">
-            <div>Подписчиков: </div>
-            <div>Подписан: </div>
+            <div>Подписчиков: {{ author.following.count }}</div>
+            <div>Подписан: {{ author.follower.count }}</div>
             <!-- Количество записей -->
             <div>Записей: {{ author.posts.count }}</div>
         </div>
@@ -21,7 +21,7 @@
     </div>
     <div class="info_button d-flex align-items-end">
         <ul>
-            <li><a href="#">написать</a></li>
+{#            <li><a href="#">написать</a></li>#}
 
             {% if following %}
                 <li class="sep"><a href="{% url 'profile_unfollow' author %}">отписаться →</a></li>

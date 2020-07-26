@@ -6,7 +6,7 @@ from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from sorl.thumbnail import get_thumbnail
 
-from .models import Post, User, Group, Comment
+from .models import Post, User, Group, Comment, Follow
 
 
 class UserTest(TestCase):
@@ -22,6 +22,14 @@ class UserTest(TestCase):
                                         group=self.group)
         self.client.force_login(self.user)
         self.anon_client = Client()
+
+        self.follower = User.objects.create_user(
+            'username=terminator',
+            email='terminator@skynet.com',
+            password='best1'
+        )
+        self.follower_client = Client()
+        self.follower_client.force_login(self.follower)
 
     def generate_urls_for_tests(self, default=True, post=None, name=None):
         if default:
@@ -161,7 +169,7 @@ class UserTest(TestCase):
             self.assertContains(response, img.url)
 
     def test_uploading_nonimage(self):
-        """Защита от загрузки файлов не-графических форматов."""
+        """Защита от загрузки файлов не графических форматов."""
 
         text = 'post with txt'
         with tempfile.TemporaryDirectory() as temp_directory:
@@ -227,3 +235,48 @@ class UserTest(TestCase):
         self.assertEqual(Comment.objects.all().count(), 1)
         response = self.client.get(self.generate_urls_for_tests(name='post'))
         self.assertNotContains(response, second_comment, status_code=200)
+
+    def test_authorized_user_can_manage_follows(self):
+        """Авторизованный пользователь может подписываться на других\
+        пользователей и удалять их из подписок."""
+
+        follow_url = reverse('profile_follow', kwargs={'username': self.user})
+        response = self.follower_client.get(follow_url, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.follower.follower.all().count(), 1)
+        unfollow_url = reverse('profile_unfollow',
+                               kwargs={'username': self.user})
+        response = self.follower_client.get(unfollow_url, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.follower.follower.all().count(), 0)
+
+    def test_follows(self):
+        """Новая запись пользователя появляется в ленте тех, кто на него\
+        подписан и не появляется в ленте тех, кто не подписан на него."""
+
+        text = 'Следуй за белым кроликом'
+        response = self.client.post(
+            reverse('new_post'),
+            data={'text': text},
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+
+        follow_url = reverse('profile_follow', kwargs={'username': self.user})
+        response = self.follower_client.get(follow_url, follow=True)
+        self.assertEqual(response.status_code, 200)
+        response = self.follower_client.get(reverse('follow_index'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('paginator', response.context)
+        self.assertEqual(response.context['paginator'].count, 2)
+        self.assertContains(response, text, status_code=200)
+
+        unfollow_url = reverse('profile_unfollow',
+                               kwargs={'username': self.user})
+        response = self.follower_client.get(unfollow_url, follow=True)
+        self.assertEqual(response.status_code, 200)
+        response = self.follower_client.get(reverse('follow_index'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('paginator', response.context)
+        self.assertEqual(response.context['paginator'].count, 0)
+        self.assertNotContains(response, text, status_code=200)

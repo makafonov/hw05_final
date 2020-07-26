@@ -6,7 +6,7 @@ from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from sorl.thumbnail import get_thumbnail
 
-from .models import Post, User, Group
+from .models import Post, User, Group, Comment
 
 
 class UserTest(TestCase):
@@ -196,3 +196,34 @@ class UserTest(TestCase):
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('index'))
         self.assertNotContains(response, text, status_code=200)
+
+    def test_authorized_user_create_comment(self):
+        """Только авторизированный пользователь может комментировать посты."""
+
+        self.assertEqual(Comment.objects.all().count(), 0)
+        first_comment = 'Первый комментарий'
+        params = {'username': self.post.author, 'post_id': self.post.id}
+        comment_url = reverse('add_comment', kwargs=params)
+        response = self.client.post(
+            comment_url,
+            data={'text': first_comment},
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Comment.objects.all().count(), 1)
+        response = self.client.get(self.generate_urls_for_tests(name='post'))
+        self.assertContains(response, first_comment, status_code=200)
+
+        second_comment = 'Второй комментарий'
+        response = self.anon_client.post(
+            comment_url,
+            data={'text': second_comment},
+            follow=True
+        )
+        redirect_url = urljoin(reverse('login'), '?next=' + comment_url)
+        self.assertRedirects(response, redirect_url, status_code=302,
+                             target_status_code=200, msg_prefix='',
+                             fetch_redirect_response=True)
+        self.assertEqual(Comment.objects.all().count(), 1)
+        response = self.client.get(self.generate_urls_for_tests(name='post'))
+        self.assertNotContains(response, second_comment, status_code=200)

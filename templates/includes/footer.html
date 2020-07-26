@@ -1,29 +1,23 @@
-<footer class="footer_area">
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <div class="footer-content">
-                </div>
-            </div>
+<footer class="footer mt-auto py-3">
+    <div class="container d-flex">
+        <div class="footer-logo">
+            <a href="#">Ya<span>tube</span></a>
         </div>
-    </div>
+        <div class="footer-links">
+            <ul>
+                <li class=""><a href="{% url 'about' %}">Об авторе</a></li>
+                <li class=""><a href="{% url 'spec' %}">Технологии</a></li>
+            </ul>
+        </div>
+        <div class="copyright ml-auto">
+            <p>Социальная сеть<span> Ya</span>tube © {{ year }}, все права защищены.</p>
+        </div>
 
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <!-- Copywrite Text -->
-                <div class="footer_links text-center">
-                    <p><a href="/about-author/">Об авторе</a> - <a href="/about-spec/">Технологии</a></p>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12">
-                <!-- Copywrite Text -->
-                <div class="copy_right_text text-center">
-                    <p>Социальная сеть <span>Ya</span>tube © {{ year }}, все права защищены.</p>
-                </div>
-            </div>
-        </div>
     </div>
 </footer>
+
+{#<footer class="footer mt-auto py-3">#}
+{#  <div class="container">#}
+{#    <span class="text-muted">Place sticky footer content here.</span>#}
+{#  </div>#}
+{#</footer>#}

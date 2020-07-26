@@ -1,19 +1,14 @@
 import tempfile
 from urllib.parse import urljoin
 
+from django.core.cache import cache
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from sorl.thumbnail import get_thumbnail
 
 from .models import Post, User, Group
-from django.db.models.fields.files import ImageFieldFile
 
 
-@override_settings(CACHES={
-    'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-    }
-})
 class UserTest(TestCase):
     def setUp(self):
         self.client = Client()
@@ -57,7 +52,8 @@ class UserTest(TestCase):
         страница (profile).
         """
 
-        response = self.client.get(self.generate_urls_for_tests(name='profile'))
+        response = self.client.get(
+            self.generate_urls_for_tests(name='profile'))
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response.context['author'], User)
         self.assertEqual(response.context['author'].username,
@@ -72,7 +68,8 @@ class UserTest(TestCase):
             follow=True
         )
         self.assertEqual(response.status_code, 200)
-        response = self.client.get(self.generate_urls_for_tests(name='profile'))
+        response = self.client.get(
+            self.generate_urls_for_tests(name='profile'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['paginator'].count, 2)
         self.assertIsInstance(response.context['author'], User)
@@ -92,14 +89,9 @@ class UserTest(TestCase):
         )
         self.assertEqual(Post.objects.count(), 1)
         url = urljoin(reverse('login'), '?next=' + reverse('new_post'))
-        self.assertRedirects(
-            response,
-            url,
-            status_code=302,
-            target_status_code=200,
-            msg_prefix='',
-            fetch_redirect_response=True
-        )
+        self.assertRedirects(response, url, status_code=302,
+                             target_status_code=200, msg_prefix='',
+                             fetch_redirect_response=True)
 
     def test_create_new_post(self):
         """
@@ -123,17 +115,20 @@ class UserTest(TestCase):
             'post_edit',
             kwargs={'username': self.post.author, 'post_id': self.post.id}
         )
-        response = self.client.post(url,
-                                    data={'text': modded_text, 'group': self.group.id},
-                                    follow=True)
+        self.client.post(
+            url,
+            data={'text': modded_text, 'group': self.group.id},
+            follow=True)
         for url in self.generate_urls_for_tests().values():
+            if url == reverse('index'):
+                cache.clear()
             response = self.client.get(url)
             self.assertContains(response, modded_text, status_code=200)
 
     def test_404_page(self):
         """Сервер возвращает код 404, если страница не найдена."""
 
-        response = self.client.get('new_unknown_url/')
+        response = self.client.get('unknown_url/')
         self.assertEqual(response.status_code, 404)
 
     def test_page_with_image(self):
@@ -142,15 +137,62 @@ class UserTest(TestCase):
         with tempfile.TemporaryDirectory() as temp_directory:
             with override_settings(MEDIA_ROOT=temp_directory):
                 with open('posts/tests/test.jpg', 'rb') as img:
-                    payload = {'group': self.group.id, 'text': 'post with image', 'image': img}
-                    response = self.client.post(reverse('new_post'), data=payload, follow=True)
+                    payload = {
+                        'group': self.group.id,
+                        'text': 'post with image',
+                        'image': img
+                    }
+                    response = self.client.post(
+                        reverse('new_post'),
+                        data=payload,
+                        follow=True)
                     self.assertEqual(response.status_code, 200)
+                    self.assertEqual(response.resolver_match.view_name,
+                                     'index')
+                    self.assertNotEqual(Post.objects.all().count(), 1)
         latest_post = Post.objects.latest('pub_date')
 
         for url in self.generate_urls_for_tests(False, latest_post).values():
+            if url == reverse('index'):
+                cache.clear()
             response = self.client.get(url)
-            self.assertContains(response, '<img', status_code=200)
-            self.assertIsInstance(response.context['post'].image, ImageFieldFile)
-
-            img = get_thumbnail(latest_post.image, "783x339", crop="center", upscale=True)
+            img = get_thumbnail(
+                latest_post.image, "783x339", crop="center", upscale=True)
             self.assertContains(response, img.url)
+
+    def test_uploading_nonimage(self):
+        """Защита от загрузки файлов не-графических форматов."""
+
+        text = 'post with txt'
+        with tempfile.TemporaryDirectory() as temp_directory:
+            with override_settings(MEDIA_ROOT=temp_directory):
+                with open('posts/tests/test.txt', 'rb') as file:
+                    payload = {
+                        'group': self.group.id,
+                        'text': text,
+                        'image': file
+                    }
+                    response = self.client.post(
+                        reverse('new_post'),
+                        data=payload,
+                        follow=True
+                    )
+                    self.assertEqual(response.status_code, 200)
+                    self.assertEqual(response.resolver_match.view_name,
+                                     'new_post')
+        self.assertEqual(Post.objects.all().count(), 1)
+
+    def test_cache_is_working(self):
+        """Проверка работы кэша."""
+
+        response = self.client.get(reverse('index'))
+        self.assertEqual(response.status_code, 200)
+        text = 'Кэш есть'
+        response = self.client.post(
+            reverse('new_post'),
+            data={'text': text},
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse('index'))
+        self.assertNotContains(response, text, status_code=200)

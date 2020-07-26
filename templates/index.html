@@ -12,8 +12,8 @@
                 <div class="content-header">
                     <h1>Последние обновления на сайте</h1>
                 </div>
-                {% load cache %}
-                {% cache 20 index_page %}
+{#                {% load cache %}#}
+{#                {% cache 20 index_page %}#}
                     <!-- Вывод ленты записей -->
                     {% for post in page %}
                         {% include 'includes/post_item.html' with post=post %}
@@ -21,7 +21,7 @@
                             <div class="separator d-flex justify-content-center">...</div>
                         {% endif %}
                     {% endfor %}
-                {% endcache %}
+{#                {% endcache %}#}
             </div> <!-- /posts -->
         </div> <!-- /col-9 -->
 

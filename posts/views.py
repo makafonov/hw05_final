@@ -18,6 +18,7 @@ def year(request):
     return {'year': current_year}
 
 
+@cache_page(20, key_prefix='index_page')
 def index(request):
     """Главная страница."""
 
@@ -57,10 +58,12 @@ def profile(request, username):
     """Профиль пользователя."""
 
     author = get_object_or_404(User, username=username)
-    existing_follows = Follow.objects.filter(user=request.user)
+
     following = False
-    for follow in existing_follows:
-        if author.id == follow.author_id:
+    if request.user.is_authenticated:
+        existing_follow = request.user.follower.all().filter(
+            author=author).exists()
+        if existing_follow:
             following = True
 
     posts = author.posts.all()
@@ -134,10 +137,8 @@ def add_comment(request, username, post_id):
 def follow_index(request):
     """Избранные авторы. Главная страница"""
 
-    # author_ids = Follow.objects.values_list('author_id').filter(
-    #     user=request.user)
-    # posts = Post.objects.filter(author_id__in=author_ids)
-    posts = Post.objects.filter(author__in=request.user.follower.all().values_list('author'))
+    posts = Post.objects.filter(
+        author__in=request.user.follower.all().values_list('author'))
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -156,7 +157,7 @@ def profile_follow(request, username):
     if request.user.username == username:
         return redirect('profile', username=username)
     new_author = get_object_or_404(User, username=username)
-    follow = request.user.follower.all().filter(author=new_author)
+    follow = request.user.follower.all().filter(author=new_author).exists()
     if not follow:
         Follow.objects.create(author_id=new_author.id, user_id=request.user.id)
         return redirect('follow_index')
@@ -173,7 +174,7 @@ def profile_unfollow(request, username):
         return redirect('profile', username=username)
     existing_author = get_object_or_404(User, username=username)
     follow = request.user.follower.all().filter(author=existing_author)
-    if follow:
+    if follow.exists():
         follow.delete()
         return redirect('follow_index')
     else:

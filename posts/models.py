@@ -25,7 +25,7 @@ class Post(models.Model):
                               models.SET_NULL,
                               blank=True,
                               null=True,
-                              related_name='groups')
+                              related_name='posts')
     image = models.ImageField(upload_to='posts/', blank=True, null=True)
 
     class Meta:

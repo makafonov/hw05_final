@@ -135,7 +135,7 @@ def add_comment(request, username, post_id):
 
 @login_required
 def follow_index(request):
-    """Избранные авторы. Главная страница"""
+    """Избранные авторы. Главная страница."""
 
     posts = Post.objects.filter(
         author__in=request.user.follower.all().values_list('author'))
@@ -156,26 +156,17 @@ def profile_follow(request, username):
 
     if request.user.username == username:
         return redirect('profile', username=username)
-    new_author = get_object_or_404(User, username=username)
-    follow = request.user.follower.all().filter(author=new_author).exists()
-    if not follow:
-        Follow.objects.create(author_id=new_author.id, user_id=request.user.id)
-        return redirect('follow_index')
-    else:
-        print('уже подписан')
-        return redirect('profile', username=username)
+    author = get_object_or_404(User, username=username)
+    Follow.objects.get_or_create(user=request.user, author=author)
+    return redirect('follow_index')
 
 
 @login_required
 def profile_unfollow(request, username):
-    """Отписка от графомана."""
+    """Отписка от автора."""
 
     if request.user.username == username:
         return redirect('profile', username=username)
-    existing_author = get_object_or_404(User, username=username)
-    follow = request.user.follower.all().filter(author=existing_author)
-    if follow.exists():
-        follow.delete()
-        return redirect('follow_index')
-    else:
-        return redirect('profile', username=username)
+    author = get_object_or_404(User, username=username)
+    request.user.follower.all().filter(author=author).delete()
+    return redirect('follow_index')

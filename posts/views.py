@@ -138,7 +138,7 @@ def follow_index(request):
     """Избранные авторы. Главная страница."""
 
     posts = Post.objects.filter(
-        author__in=request.user.follower.all().values_list('author'))
+        author__following__in=Follow.objects.filter(user=request.user))
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -168,5 +168,5 @@ def profile_unfollow(request, username):
     if request.user.username == username:
         return redirect('profile', username=username)
     author = get_object_or_404(User, username=username)
-    request.user.follower.all().filter(author=author).delete()
+    request.user.follower.filter(author=author).delete()
     return redirect('follow_index')

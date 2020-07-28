@@ -1,6 +1,8 @@
 import tempfile
 from urllib.parse import urljoin
+from io import BytesIO
 
+from PIL import Image
 from django.core.cache import cache
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
@@ -12,12 +14,13 @@ from .models import Post, User, Group, Comment, Follow
 class UserTest(TestCase):
     def setUp(self):
         self.client = Client()
+        self.text = 'Тестовый пост Сары!'
         self.user = User.objects.create_user(username='sarah',
                                              email='connor.s@skynet.com',
                                              password='12345')
         self.group = Group.objects.create(slug='test', title='Test',
                                           description='test group')
-        self.post = Post.objects.create(text='Тестовый пост Сары!',
+        self.post = Post.objects.create(text=self.text,
                                         author=self.user,
                                         group=self.group)
         self.client.force_login(self.user)
@@ -53,6 +56,22 @@ class UserTest(TestCase):
         if name:
             return urls[name]
         return urls
+
+    @staticmethod
+    def create_test_image_file():
+        file = BytesIO()
+        image = Image.new('RGBA', size=(100, 100), color=(155, 0, 0))
+        image.save(file, 'png')
+        file.name = 'test.png'
+        file.seek(0)
+        return file
+
+    @staticmethod
+    def create_test_txt_file():
+        file = BytesIO(b'Hello World')
+        file.name = 'test.txt'
+        file.seek(0)
+        return file
 
     def test_user_profile(self):
         """
@@ -139,27 +158,26 @@ class UserTest(TestCase):
         response = self.client.get('unknown_url/')
         self.assertEqual(response.status_code, 404)
 
+    @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
     def test_page_with_image(self):
         """На страницах есть тэг img."""
 
-        with tempfile.TemporaryDirectory() as temp_directory:
-            with override_settings(MEDIA_ROOT=temp_directory):
-                with open('posts/tests/test.jpg', 'rb') as img:
-                    payload = {
-                        'group': self.group.id,
-                        'text': 'post with image',
-                        'image': img
-                    }
-                    response = self.client.post(
-                        reverse('new_post'),
-                        data=payload,
-                        follow=True)
-                    self.assertEqual(response.status_code, 200)
-                    self.assertEqual(response.resolver_match.view_name,
-                                     'index')
-                    self.assertNotEqual(Post.objects.all().count(), 1)
-        latest_post = Post.objects.latest('pub_date')
+        image = self.create_test_image_file()
+        payload = {
+            'group': self.group.id,
+            'text': 'post with image',
+            'image': image
+        }
+        response = self.client.post(
+            reverse('new_post'),
+            data=payload,
+            follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.resolver_match.view_name,
+                         'index', msg='Пост не создался')
+        self.assertEqual(Post.objects.all().count(), 2)
 
+        latest_post = Post.objects.latest('pub_date')
         for url in self.generate_urls_for_tests(False, latest_post).values():
             if url == reverse('index'):
                 cache.clear()
@@ -171,23 +189,21 @@ class UserTest(TestCase):
     def test_uploading_nonimage(self):
         """Защита от загрузки файлов не графических форматов."""
 
-        text = 'post with txt'
-        with tempfile.TemporaryDirectory() as temp_directory:
-            with override_settings(MEDIA_ROOT=temp_directory):
-                with open('posts/tests/test.txt', 'rb') as file:
-                    payload = {
-                        'group': self.group.id,
-                        'text': text,
-                        'image': file
-                    }
-                    response = self.client.post(
-                        reverse('new_post'),
-                        data=payload,
-                        follow=True
-                    )
-                    self.assertEqual(response.status_code, 200)
-                    self.assertEqual(response.resolver_match.view_name,
-                                     'new_post')
+        file = self.create_test_txt_file()
+        payload = {
+            'group': self.group.id,
+            'text': 'post with txt',
+            'image': file
+        }
+        response = self.client.post(
+            reverse('new_post'),
+            data=payload,
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.resolver_match.view_name,
+                         'new_post', 'Пост создался')
+        self.assertIsInstance(response.context['form'].errors, dict)
         self.assertEqual(Post.objects.all().count(), 1)
 
     def test_cache_is_working(self):
@@ -206,43 +222,55 @@ class UserTest(TestCase):
         self.assertNotContains(response, text, status_code=200)
 
     def test_authorized_user_create_comment(self):
-        """Только авторизированный пользователь может комментировать посты."""
+        """Авторизированный пользователь может комментировать посты."""
 
         self.assertEqual(Comment.objects.all().count(), 0)
-        first_comment = 'Первый комментарий'
+        comment = 'Комментарий'
         params = {'username': self.post.author, 'post_id': self.post.id}
         comment_url = reverse('add_comment', kwargs=params)
         response = self.client.post(
             comment_url,
-            data={'text': first_comment},
+            data={'text': comment},
             follow=True
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Comment.objects.all().count(), 1)
         response = self.client.get(self.generate_urls_for_tests(name='post'))
-        self.assertContains(response, first_comment, status_code=200)
+        self.assertContains(response, comment, status_code=200)
 
-        second_comment = 'Второй комментарий'
+    def test_unauthorized_user_create_comment(self):
+        """Не авторизированный пользователь не может комментировать посты."""
+
+        comment = 'Комментарий'
+        params = {'username': self.post.author, 'post_id': self.post.id}
+        comment_url = reverse('add_comment', kwargs=params)
         response = self.anon_client.post(
             comment_url,
-            data={'text': second_comment},
+            data={'text': comment},
             follow=True
         )
         redirect_url = urljoin(reverse('login'), '?next=' + comment_url)
         self.assertRedirects(response, redirect_url, status_code=302,
                              target_status_code=200, msg_prefix='',
                              fetch_redirect_response=True)
-        self.assertEqual(Comment.objects.all().count(), 1)
+        self.assertEqual(Comment.objects.all().count(), 0)
         response = self.client.get(self.generate_urls_for_tests(name='post'))
-        self.assertNotContains(response, second_comment, status_code=200)
+        self.assertNotContains(response, comment, status_code=200)
 
-    def test_authorized_user_can_manage_follows(self):
+    def test_authorized_user_can_follow(self):
         """Авторизованный пользователь может подписываться на других\
-        пользователей и удалять их из подписок."""
+        пользователей."""
 
+        self.assertEqual(self.follower.follower.all().count(), 0)
         follow_url = reverse('profile_follow', kwargs={'username': self.user})
         response = self.follower_client.get(follow_url, follow=True)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.follower.follower.all().count(), 1)
+
+    def test_authorized_user_can_unfollow(self):
+        """Авторизованный пользователь может удлалять авторов из подписок."""
+
+        Follow.objects.create(user=self.follower, author=self.user)
         self.assertEqual(self.follower.follower.all().count(), 1)
         unfollow_url = reverse('profile_unfollow',
                                kwargs={'username': self.user})
@@ -250,33 +278,24 @@ class UserTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.follower.follower.all().count(), 0)
 
-    def test_follows(self):
+    def test_new_post_in_follow_index(self):
         """Новая запись пользователя появляется в ленте тех, кто на него\
-        подписан и не появляется в ленте тех, кто не подписан на него."""
+        подписан."""
 
-        text = 'Следуй за белым кроликом'
-        response = self.client.post(
-            reverse('new_post'),
-            data={'text': text},
-            follow=True
-        )
-        self.assertEqual(response.status_code, 200)
-
-        follow_url = reverse('profile_follow', kwargs={'username': self.user})
-        response = self.follower_client.get(follow_url, follow=True)
-        self.assertEqual(response.status_code, 200)
+        Follow.objects.create(user=self.follower, author=self.user)
+        self.assertEqual(self.follower.follower.all().count(), 1)
         response = self.follower_client.get(reverse('follow_index'))
         self.assertEqual(response.status_code, 200)
         self.assertIn('paginator', response.context)
-        self.assertEqual(response.context['paginator'].count, 2)
-        self.assertContains(response, text, status_code=200)
+        self.assertEqual(response.context['paginator'].count, 1)
+        self.assertContains(response, self.text, status_code=200)
 
-        unfollow_url = reverse('profile_unfollow',
-                               kwargs={'username': self.user})
-        response = self.follower_client.get(unfollow_url, follow=True)
-        self.assertEqual(response.status_code, 200)
+    def test_no_new_post_in_follow_index(self):
+        """Новая запись пользователя не появляется в ленте тех, кто не\
+        подписан на него."""
+
         response = self.follower_client.get(reverse('follow_index'))
         self.assertEqual(response.status_code, 200)
         self.assertIn('paginator', response.context)
         self.assertEqual(response.context['paginator'].count, 0)
-        self.assertNotContains(response, text, status_code=200)
+        self.assertNotContains(response, self.text, status_code=200)

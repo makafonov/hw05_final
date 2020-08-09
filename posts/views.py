@@ -7,11 +7,11 @@ from django.shortcuts import (get_list_or_404, get_object_or_404, redirect,
 from django.views.decorators.cache import cache_page
 
 from .forms import CommentForm, PostForm
-from .models import Group, Post, User, Follow
+from .models import Follow, Group, Post, User
 
 
 def year(request):
-    """Добавляет переменную с текущим годом."""
+    """Добавляет переменную с текущим годом. """
 
     today = dt.datetime.today()
     current_year = today.year
@@ -74,7 +74,7 @@ def profile(request, username):
         'author': author,
         'page': page,
         'paginator': paginator,
-        'following': following
+        'following': following,
     })
 
 
@@ -87,7 +87,7 @@ def post_view(request, username, post_id):
         'post': post,
         'author': post.author,
         'items': post.comments.all(),
-        'form': form
+        'form': form,
     })
 
 
@@ -101,7 +101,7 @@ def post_edit(request, username, post_id):
     form = PostForm(
         request.POST or None,
         files=request.FILES or None,
-        instance=post
+        instance=post,
     )
     if form.is_valid():
         form.save()
@@ -109,7 +109,7 @@ def post_edit(request, username, post_id):
     return render(request, 'new_post.html', {
         'form': form,
         'post': post,
-        'is_created': True
+        'is_created': True,
     })
 
 
@@ -125,6 +125,7 @@ def server_error(request):
 def add_comment(request, username, post_id):
     """Добавление комментария к посту."""
 
+    post = get_object_or_404(Post, id=post_id)  # noqa
     form = CommentForm(request.POST or None)
     if form.is_valid():
         form.instance.author = request.user
@@ -137,8 +138,7 @@ def add_comment(request, username, post_id):
 def follow_index(request):
     """Избранные авторы. Главная страница."""
 
-    posts = Post.objects.filter(
-        author__following__in=Follow.objects.filter(user=request.user))
+    posts = Post.objects.filter(author__following__user=request.user)
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -146,7 +146,7 @@ def follow_index(request):
     return render(request, 'follow.html', {
         'page': page,
         'paginator': paginator,
-        'follow': True
+        'follow': True,
     })
 
 

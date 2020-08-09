@@ -1,14 +1,16 @@
 import tempfile
-from urllib.parse import urljoin
 from io import BytesIO
+from urllib.parse import urljoin
 
-from PIL import Image
+from django.conf import settings
 from django.core.cache import cache
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
+
+from PIL import Image
 from sorl.thumbnail import get_thumbnail
 
-from .models import Post, User, Group, Comment, Follow
+from .models import Comment, Follow, Group, Post, User
 
 
 class UserTest(TestCase):
@@ -29,7 +31,7 @@ class UserTest(TestCase):
         self.follower = User.objects.create_user(
             'username=terminator',
             email='terminator@skynet.com',
-            password='best1'
+            password='best1',
         )
         self.follower_client = Client()
         self.follower_client.force_login(self.follower)
@@ -46,12 +48,12 @@ class UserTest(TestCase):
                 reverse('post',
                         kwargs={
                             'username': post.author,
-                            'post_id': post.id
+                            'post_id': post.id,
                         }),
             'group':
                 reverse('group', kwargs={
-                    'slug': self.group.slug
-                })
+                    'slug': self.group.slug,
+                }),
         }
         if name:
             return urls[name]
@@ -92,7 +94,7 @@ class UserTest(TestCase):
         response = self.client.post(
             reverse('new_post'),
             data={'text': 'Поехали!', 'group': self.group.id},
-            follow=True
+            follow=True,
         )
         self.assertEqual(response.status_code, 200)
         response = self.client.get(
@@ -112,7 +114,7 @@ class UserTest(TestCase):
         response = self.anon_client.post(
             reverse('new_post'),
             data={'text': 'Поехали!'},
-            follow=True
+            follow=True,
         )
         self.assertEqual(Post.objects.count(), 1)
         url = urljoin(reverse('login'), '?next=' + reverse('new_post'))
@@ -140,17 +142,21 @@ class UserTest(TestCase):
         modded_text = 'Измененный пост'
         url = reverse(
             'post_edit',
-            kwargs={'username': self.post.author, 'post_id': self.post.id}
+            kwargs={'username': self.post.author, 'post_id': self.post.id},
         )
         self.client.post(
             url,
             data={'text': modded_text, 'group': self.group.id},
             follow=True)
+
         for url in self.generate_urls_for_tests().values():
             if url == reverse('index'):
                 cache.clear()
             response = self.client.get(url)
-            self.assertContains(response, modded_text, status_code=200)
+            self.assertContains(response, modded_text, status_code=200,
+                                msg_prefix='Измененный текст не найден на '
+                                           f'странице {url}. CACHE = '
+                                           f'{settings.CACHES}')
 
     def test_404_page(self):
         """Сервер возвращает код 404, если страница не найдена."""
@@ -166,7 +172,7 @@ class UserTest(TestCase):
         payload = {
             'group': self.group.id,
             'text': 'post with image',
-            'image': image
+            'image': image,
         }
         response = self.client.post(
             reverse('new_post'),
@@ -183,7 +189,7 @@ class UserTest(TestCase):
                 cache.clear()
             response = self.client.get(url)
             img = get_thumbnail(
-                latest_post.image, "783x339", crop="center", upscale=True)
+                latest_post.image, '783x339', crop='center', upscale=True)
             self.assertContains(response, img.url)
 
     def test_uploading_nonimage(self):
@@ -193,12 +199,12 @@ class UserTest(TestCase):
         payload = {
             'group': self.group.id,
             'text': 'post with txt',
-            'image': file
+            'image': file,
         }
         response = self.client.post(
             reverse('new_post'),
             data=payload,
-            follow=True
+            follow=True,
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.resolver_match.view_name,
@@ -215,7 +221,7 @@ class UserTest(TestCase):
         response = self.client.post(
             reverse('new_post'),
             data={'text': text},
-            follow=True
+            follow=True,
         )
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('index'))
@@ -231,7 +237,7 @@ class UserTest(TestCase):
         response = self.client.post(
             comment_url,
             data={'text': comment},
-            follow=True
+            follow=True,
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Comment.objects.all().count(), 1)
@@ -247,7 +253,7 @@ class UserTest(TestCase):
         response = self.anon_client.post(
             comment_url,
             data={'text': comment},
-            follow=True
+            follow=True,
         )
         redirect_url = urljoin(reverse('login'), '?next=' + comment_url)
         self.assertRedirects(response, redirect_url, status_code=302,

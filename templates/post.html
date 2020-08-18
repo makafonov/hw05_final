@@ -4,10 +4,10 @@
 <div class="container content">
     <div class="row">
         <div class="col-9">
-            {% include 'includes/author_block.html' with author=author %}
+            {% include 'includes/author_block.html' with author=post.author %}
 
             <div class="posts">
-                {% include 'includes/post_item.html' with author=author post=post %}
+                {% include 'includes/post_item.html' with author=post.author post=post %}
             </div> <!-- /posts -->
         </div> <!-- /col-9 -->
 

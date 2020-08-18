@@ -9,8 +9,8 @@
                 <div class="img"></div>
                 <div class="info_links d-flex flex-column">
                     <!-- Название группы -->
-                    <h1>{{ group.title }}</h1>
-                    <p>{{ group.description }}</p>
+                    <h2>{{ group.title }}</h2>
+                    <h3>{{ group.description }}</h3>
                     <div class="info_links_urls">
                         <div>Записей: {{ paginator.count }}</div>
                     </div>
@@ -19,7 +19,7 @@
 
             <div class="posts">
                 <!-- Вывод ленты записей -->
-                {% for post in page %}
+                {% for post in page_obj %}
                     {% include 'includes/post_item.html' with author=author post=post %}
                     {% if not forloop.last %}
                         <div class="separator d-flex justify-content-center">...</div>
@@ -36,8 +36,8 @@
 </div> <!-- /.container -->
 
 <!-- Вывод паджинатора -->
-{% if page.has_other_pages %}
-    {% include 'includes/paginator.html' with items=page paginator=paginator%}
+{% if page_obj.has_other_pages %}
+    {% include 'includes/paginator.html' with items=page_obj paginator=paginator%}
 {% endif %}
 
 {% endblock content %}

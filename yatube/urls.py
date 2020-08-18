@@ -5,8 +5,10 @@ from django.contrib.flatpages import views
 from django.urls import include, path, re_path
 from django.views.static import serve
 
+from posts.views import PageNotFoundView
 
-handler404 = 'posts.views.page_not_found'  # noqa
+
+handler404 = PageNotFoundView.as_view()  # noqa
 handler500 = 'posts.views.server_error'  # noqa
 
 urlpatterns = [
@@ -21,7 +23,7 @@ urlpatterns += [
          views.flatpage, {'url': '/about-author/'},
          name='about'),
     path('about-spec/', views.flatpage, {'url': '/about-spec/'}, name='spec'),
-    path('contacts/', views.flatpage, {'url': '/contacts/'}, name='contacts')
+    path('contacts/', views.flatpage, {'url': '/contacts/'}, name='contacts'),
 ]
 
 # posts app

@@ -12,17 +12,17 @@ urlpatterns = [
     path('group/<slug:slug>/', views.GroupListView.as_view(), name='group'),
     path('<str:username>/', views.ProfileListView.as_view(), name='profile'),
     path(
-        '<str:username>/<int:post_id>/',
+        '<str:username>/<int:pk>/',
         views.PostDetailView.as_view(),
         name='post',
     ),
     path(
-        '<str:username>/<int:post_id>/edit/',
+        '<str:username>/<int:pk>/edit/',
         views.PostEditView.as_view(),
         name='post_edit',
     ),
     path(
-        '<str:username>/<int:post_id>/comment/',
+        '<str:username>/<int:pk>/comment/',
         views.AddCommentView.as_view(),
         name='add_comment',
     ),

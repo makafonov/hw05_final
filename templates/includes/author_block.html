@@ -24,9 +24,9 @@
 {#            <li><a href="#">написать</a></li>#}
 
             {% if following %}
-                <li class="sep"><a href="{% url 'profile_unfollow' author %}">отписаться →</a></li>
+                <li class="sep"><a href="{% url 'profile_unfollow' username=author %}">отписаться →</a></li>
             {% else %}
-                <li class="sep"><a href="{% url 'profile_follow' author %}">подписаться →</a></li>
+                <li class="sep"><a href="{% url 'profile_follow' username=author %}">подписаться →</a></li>
             {% endif %}
 
         </ul>

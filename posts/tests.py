@@ -17,14 +17,15 @@ class UserTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.text = 'Тестовый пост Сары!'
-        self.user = User.objects.create_user(username='sarah',
-                                             email='connor.s@skynet.com',
-                                             password='12345')
-        self.group = Group.objects.create(slug='test', title='Test',
-                                          description='test group')
-        self.post = Post.objects.create(text=self.text,
-                                        author=self.user,
-                                        group=self.group)
+        self.user = User.objects.create_user(
+            username='sarah', email='connor.s@skynet.com', password='12345'
+        )
+        self.group = Group.objects.create(
+            slug='test', title='Test', description='test group'
+        )
+        self.post = Post.objects.create(
+            text=self.text, author=self.user, group=self.group
+        )
         self.client.force_login(self.user)
         self.anon_client = Client()
 
@@ -48,7 +49,7 @@ class UserTest(TestCase):
                 reverse('post',
                         kwargs={
                             'username': post.author,
-                            'post_id': post.id,
+                            'pk': post.id,
                         }),
             'group':
                 reverse('group', kwargs={
@@ -142,7 +143,7 @@ class UserTest(TestCase):
         modded_text = 'Измененный пост'
         url = reverse(
             'post_edit',
-            kwargs={'username': self.post.author, 'post_id': self.post.id},
+            kwargs={'username': self.post.author, 'pk': self.post.id},
         )
         self.client.post(
             url,
@@ -232,7 +233,7 @@ class UserTest(TestCase):
 
         self.assertEqual(Comment.objects.all().count(), 0)
         comment = 'Комментарий'
-        params = {'username': self.post.author, 'post_id': self.post.id}
+        params = {'username': self.post.author, 'pk': self.post.id}
         comment_url = reverse('add_comment', kwargs=params)
         response = self.client.post(
             comment_url,
@@ -248,7 +249,7 @@ class UserTest(TestCase):
         """Не авторизированный пользователь не может комментировать посты."""
 
         comment = 'Комментарий'
-        params = {'username': self.post.author, 'post_id': self.post.id}
+        params = {'username': self.post.author, 'pk': self.post.id}
         comment_url = reverse('add_comment', kwargs=params)
         response = self.anon_client.post(
             comment_url,

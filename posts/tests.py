@@ -270,7 +270,7 @@ class UserTest(TestCase):
 
         self.assertEqual(self.follower.follower.all().count(), 0)
         follow_url = reverse('profile_follow', kwargs={'username': self.user})
-        response = self.follower_client.get(follow_url, follow=True)
+        response = self.follower_client.post(follow_url, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.follower.follower.all().count(), 1)
 
@@ -281,7 +281,7 @@ class UserTest(TestCase):
         self.assertEqual(self.follower.follower.all().count(), 1)
         unfollow_url = reverse('profile_unfollow',
                                kwargs={'username': self.user})
-        response = self.follower_client.get(unfollow_url, follow=True)
+        response = self.follower_client.post(unfollow_url, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.follower.follower.all().count(), 0)
 

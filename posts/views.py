@@ -5,7 +5,7 @@ from django.shortcuts import (
     redirect,
     render,
 )
-from django.urls import reverse
+from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.cache import cache_page
@@ -14,6 +14,7 @@ from django.views.generic import CreateView, DetailView, ListView, UpdateView
 from .forms import CommentForm, PostForm
 from .mixins import (
     PostSuccessUrlMixin,
+    PytestGetMixin,
     PytestMixin,
     SameUserFollowMixin,
     UserIsFollowerMixin,
@@ -54,7 +55,6 @@ class GroupListView(PytestMixin, ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
-        context['group'] = self.group
         return context
 
 
@@ -64,14 +64,12 @@ class NewPostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     template_name = 'new_post.html'
     form_class = PostForm
+    success_url = reverse_lazy('index')
 
     def form_valid(self, form):
         form.instance.author = self.request.user
         form.save()
         return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse('index')
 
 
 class ProfileListView(UserIsFollowerMixin, ListView):
@@ -102,9 +100,6 @@ class PostEditView(LoginRequiredMixin, PostSuccessUrlMixin, UpdateView):
             )
         return super().dispatch(request, *args, **kwargs)
 
-    def get_object(self, queryset=None):
-        return get_object_or_404(Post, id=self.kwargs['pk'])
-
 
 class AddCommentView(LoginRequiredMixin, PostSuccessUrlMixin, CreateView):
     """Добавление комментария к посту."""
@@ -130,19 +125,21 @@ class FollowIndexView(LoginRequiredMixin, PytestMixin, ListView):
         return Post.objects.filter(author__following__user=self.request.user)
 
 
-class ProfileFollowView(LoginRequiredMixin, SameUserFollowMixin, View):
+class ProfileFollowView(LoginRequiredMixin, PytestGetMixin, SameUserFollowMixin,
+                        View):
     """Подписка на автора."""
 
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         author = get_object_or_404(User, username=kwargs['username'])
         Follow.objects.get_or_create(user=request.user, author=author)
         return redirect('follow_index')
 
 
-class ProfileUnfollowView(LoginRequiredMixin, SameUserFollowMixin, View):
+class ProfileUnfollowView(LoginRequiredMixin, PytestGetMixin,
+                          SameUserFollowMixin, View):
     """Отписка от автора."""
 
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         author = get_object_or_404(User, username=kwargs['username'])
         request.user.follower.filter(author=author).delete()
         return redirect('follow_index')

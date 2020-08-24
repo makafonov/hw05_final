@@ -38,6 +38,14 @@ class PytestMixin:
         return context
 
 
+class PytestGetMixin:
+    """Перенаправление GET запроса для подписки/отписки, pytest отправляет GET
+    запрос."""
+
+    def get(self, request, *args, **kwargs):
+        return self.post(request, *args, **kwargs)
+
+
 class UserIsFollowerMixin:
     """Добавление в контекст флага 'following' (является ли пользователь
     подписчиком)."""

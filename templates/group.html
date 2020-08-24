@@ -17,15 +17,18 @@
                 </div>
             </div>
 
-            <div class="posts">
-                <!-- Вывод ленты записей -->
-                {% for post in page_obj %}
-                    {% include 'includes/post_item.html' with author=post.author post=post %}
-                    {% if not forloop.last %}
-                        <div class="separator d-flex justify-content-center">...</div>
-                    {% endif %}
-                {% endfor %}
-            </div> <!-- /posts -->
+            {% if paginator.count %}
+                 <div class="posts">
+                    <!-- Вывод ленты записей -->
+                    {% for post in page %}
+                        {% include 'includes/post_item.html' with author=post.author post=post %}
+                        {% if not forloop.last %}
+                            <div class="separator d-flex justify-content-center">...</div>
+                        {% endif %}
+                    {% endfor %}
+                </div> <!-- /posts -->
+            {% endif %}
+
         </div> <!-- /col-9 -->
 
         <!-- Sidebar -->
@@ -36,8 +39,8 @@
 </div> <!-- /.container -->
 
 <!-- Вывод паджинатора -->
-{% if page_obj.has_other_pages %}
-    {% include 'includes/paginator.html' with items=page_obj paginator=paginator%}
+{% if page.has_other_pages %}
+    {% include 'includes/paginator.html' with items=page paginator=paginator%}
 {% endif %}
 
 {% endblock content %}

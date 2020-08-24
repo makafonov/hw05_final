@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 from django.shortcuts import (
     get_list_or_404,
     get_object_or_404,
@@ -43,18 +44,20 @@ class PostDetailView(UserIsFollowerMixin, DetailView):
         return data
 
 
-class GroupListView(PytestMixin, ListView):
+class GroupListView(DetailView):
     """Страница группы."""
 
+    model = Group
     template_name = 'group.html'
-    paginate_by = 10
-
-    def get_queryset(self):
-        self.group = get_object_or_404(Group, slug=self.kwargs['slug'])
-        return get_list_or_404(Post, group=self.group)
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
+        posts = context['object'].posts.all()
+        paginator = Paginator(posts, 10)
+        page_number = self.request.GET.get('page')
+        context['page'] = paginator.get_page(page_number)
+        context['paginator'] = paginator
+
         return context
 
 

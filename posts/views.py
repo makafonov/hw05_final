@@ -1,10 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.paginator import Paginator
-from django.shortcuts import (
-    get_object_or_404,
-    redirect,
-    render,
-)
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
@@ -13,11 +8,12 @@ from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
 from .forms import CommentForm, PostForm
 from .mixins import (
+    PaginatorMixin,
     PostSuccessUrlMixin,
     PytestGetMixin,
     PytestMixin,
     SameUserFollowMixin,
-    UserIsFollowerMixin, PaginatorMixin,
+    UserIsFollowerMixin,
 )
 from .models import Comment, Follow, Group, Post, User
 
@@ -64,22 +60,13 @@ class NewPostCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class ProfileView(UserIsFollowerMixin, DetailView):
+class ProfileView(PaginatorMixin, UserIsFollowerMixin, DetailView):
     """Профиль пользователя."""
 
     model = User
     template_name = 'profile.html'
     slug_field = 'username'
     slug_url_kwarg = 'username'
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(object_list=object_list, **kwargs)
-        posts = context['object'].posts.all()
-        paginator = Paginator(posts, 10)
-        page_number = self.request.GET.get('page')
-        context['page'] = paginator.get_page(page_number)
-        context['paginator'] = paginator
-        return context
 
 
 class PostEditView(LoginRequiredMixin, PostSuccessUrlMixin, UpdateView):

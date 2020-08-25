@@ -51,17 +51,18 @@ class UserIsFollowerMixin:
     """Добавление в контекст флага 'following' (является ли пользователь
     подписчиком)."""
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(object_list=object_list, **kwargs)
+    @property
+    def extra_context(self):
         author = User.objects.get(username=self.kwargs['username'])
 
         following = False
         if self.request.user.is_authenticated:
             if self.request.user.follower.filter(author=author).exists():
                 following = True
-        context['following'] = following
-        context['author'] = author
-        return context
+        return {
+            'following': following,
+            'author': author,
+        }
 
 
 class PaginatorMixin:

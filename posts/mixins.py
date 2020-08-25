@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator
 from django.shortcuts import redirect
 from django.urls import reverse
 
@@ -60,4 +61,17 @@ class UserIsFollowerMixin:
                 following = True
         context['following'] = following
         context['author'] = author
+        return context
+
+
+class PaginatorMixin:
+    """Паджинатор постов."""
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        posts = context['object'].posts.all()
+        paginator = Paginator(posts, 10)
+        page_number = self.request.GET.get('page')
+        context['page'] = paginator.get_page(page_number)
+        context['paginator'] = paginator
         return context

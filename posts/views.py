@@ -18,7 +18,7 @@ from .mixins import (
     PytestGetMixin,
     PytestMixin,
     SameUserFollowMixin,
-    UserIsFollowerMixin,
+    UserIsFollowerMixin, PaginatorMixin,
 )
 from .models import Comment, Follow, Group, Post, User
 
@@ -44,21 +44,11 @@ class PostDetailView(UserIsFollowerMixin, DetailView):
         return data
 
 
-class GroupListView(DetailView):
+class GroupView(PaginatorMixin, DetailView):
     """Страница группы."""
 
     model = Group
     template_name = 'group.html'
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(object_list=object_list, **kwargs)
-        posts = context['object'].posts.all()
-        paginator = Paginator(posts, 10)
-        page_number = self.request.GET.get('page')
-        context['page'] = paginator.get_page(page_number)
-        context['paginator'] = paginator
-
-        return context
 
 
 class NewPostCreateView(LoginRequiredMixin, CreateView):
@@ -75,15 +65,22 @@ class NewPostCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class ProfileListView(UserIsFollowerMixin, ListView):
+class ProfileView(UserIsFollowerMixin, DetailView):
     """Профиль пользователя."""
 
+    model = User
     template_name = 'profile.html'
-    paginate_by = 10
+    slug_field = 'username'
+    slug_url_kwarg = 'username'
 
-    def get_queryset(self):
-        author = get_object_or_404(User, username=self.kwargs['username'])
-        return author.posts.all()
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        posts = context['object'].posts.all()
+        paginator = Paginator(posts, 10)
+        page_number = self.request.GET.get('page')
+        context['page'] = paginator.get_page(page_number)
+        context['paginator'] = paginator
+        return context
 
 
 class PostEditView(LoginRequiredMixin, PostSuccessUrlMixin, UpdateView):

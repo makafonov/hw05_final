@@ -9,8 +9,8 @@ urlpatterns = [
     path('505/', views.server_error),
     path('new/', views.NewPostCreateView.as_view(), name='new_post'),
     path('follow/', views.FollowIndexView.as_view(), name='follow_index'),
-    path('group/<slug:slug>/', views.GroupListView.as_view(), name='group'),
-    path('<str:username>/', views.ProfileListView.as_view(), name='profile'),
+    path('group/<slug:slug>/', views.GroupView.as_view(), name='group'),
+    path('<str:username>/', views.ProfileView.as_view(), name='profile'),
     path(
         '<str:username>/<int:pk>/',
         views.PostDetailView.as_view(),

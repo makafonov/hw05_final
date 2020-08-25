@@ -1,7 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.shortcuts import (
-    get_list_or_404,
     get_object_or_404,
     redirect,
     render,
@@ -143,19 +142,3 @@ class ProfileUnfollowView(LoginRequiredMixin, PytestGetMixin,
         author = get_object_or_404(User, username=kwargs['username'])
         request.user.follower.filter(author=author).delete()
         return redirect('follow_index')
-
-
-class PageNotFoundView(View):
-    template_name = 'misc/404.html'
-
-    def get(self, request, *args, **kwargs):
-        return render(
-            request,
-            self.template_name,
-            {'path': request.path},
-            status=404,
-        )
-
-
-def server_error(request):
-    return render(request, 'misc/500.html', status=500)

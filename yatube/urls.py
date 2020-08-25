@@ -5,11 +5,6 @@ from django.contrib.flatpages import views
 from django.urls import include, path, re_path
 from django.views.static import serve
 
-from posts.views import PageNotFoundView
-
-
-handler404 = PageNotFoundView.as_view()  # noqa
-handler500 = 'posts.views.server_error'  # noqa
 
 urlpatterns = [
     path('auth/', include('users.urls')),

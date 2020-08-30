@@ -1,19 +1,7 @@
 from django.core.paginator import Paginator
 from django.shortcuts import redirect
-from django.urls import reverse
 
 from posts.models import User
-
-
-class PostSuccessUrlMixin:
-    def get_success_url(self):
-        return reverse(
-            'post',
-            kwargs={
-                'username': self.kwargs['username'],
-                'pk': self.kwargs['pk'],
-            },
-        )
 
 
 class SameUserFollowMixin:

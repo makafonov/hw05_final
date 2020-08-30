@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import F, Q
+from django.urls import reverse
 
 
 User = get_user_model()
@@ -48,6 +49,9 @@ class Post(models.Model):
     def get_header(self):
         return ' '.join(self.text.split()[:5])
 
+    def get_absolute_url(self):
+        return reverse('post', kwargs={'pk': self.pk, 'username': self.author})
+
 
 class Comment(models.Model):
     post = models.ForeignKey(
@@ -58,6 +62,14 @@ class Comment(models.Model):
     )
     text = models.TextField()
     created = models.DateTimeField('comment created date', auto_now_add=True)
+
+    def get_absolute_url(self):
+        return reverse(
+            'post', kwargs={
+                'pk': self.post.pk,
+                'username': self.post.author
+            }
+        )
 
 
 class Follow(models.Model):

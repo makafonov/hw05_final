@@ -9,7 +9,6 @@ from django.views.generic import CreateView, DetailView, ListView, UpdateView
 from .forms import CommentForm, PostForm
 from .mixins import (
     PaginatorMixin,
-    PostSuccessUrlMixin,
     PytestGetMixin,
     PytestMixin,
     SameUserFollowMixin,
@@ -69,7 +68,7 @@ class ProfileView(PaginatorMixin, UserIsFollowerMixin, DetailView):
     slug_url_kwarg = 'username'
 
 
-class PostEditView(LoginRequiredMixin, PostSuccessUrlMixin, UpdateView):
+class PostEditView(LoginRequiredMixin, UpdateView):
     """Редактирование поста."""
 
     model = Post
@@ -87,7 +86,7 @@ class PostEditView(LoginRequiredMixin, PostSuccessUrlMixin, UpdateView):
         return super().dispatch(request, *args, **kwargs)
 
 
-class AddCommentView(LoginRequiredMixin, PostSuccessUrlMixin, CreateView):
+class AddCommentView(LoginRequiredMixin, CreateView):
     """Добавление комментария к посту."""
 
     model = Comment

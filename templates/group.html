@@ -9,23 +9,26 @@
                 <div class="img"></div>
                 <div class="info_links d-flex flex-column">
                     <!-- Название группы -->
-                    <h1>{{ group.title }}</h1>
-                    <p>{{ group.description }}</p>
+                    <h2>{{ group.title }}</h2>
+                    <h3>{{ group.description }}</h3>
                     <div class="info_links_urls">
                         <div>Записей: {{ paginator.count }}</div>
                     </div>
                 </div>
             </div>
 
-            <div class="posts">
-                <!-- Вывод ленты записей -->
-                {% for post in page %}
-                    {% include 'includes/post_item.html' with author=author post=post %}
-                    {% if not forloop.last %}
-                        <div class="separator d-flex justify-content-center">...</div>
-                    {% endif %}
-                {% endfor %}
-            </div> <!-- /posts -->
+            {% if paginator.count %}
+                 <div class="posts">
+                    <!-- Вывод ленты записей -->
+                    {% for post in page %}
+                        {% include 'includes/post_item.html' with author=post.author post=post %}
+                        {% if not forloop.last %}
+                            <div class="separator d-flex justify-content-center">...</div>
+                        {% endif %}
+                    {% endfor %}
+                </div> <!-- /posts -->
+            {% endif %}
+
         </div> <!-- /col-9 -->
 
         <!-- Sidebar -->

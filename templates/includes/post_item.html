@@ -13,7 +13,7 @@
         <div class="post_date">{{ post.pub_date|date:'d E Y г. G:i' }}</div>
     </div>
     <!-- Заголовог поста -->
-    <h2><a href="{% url 'post' username=post.author.username post_id=post.id %}">{{ post.get_header }}</a></h2>
+    <h2><a href="{% url 'post' username=post.author.username pk=post.id %}">{{ post.get_header }}</a></h2>
 
     <div class="post_text">
         <p>{{ post.text|linebreaksbr }}</p>
@@ -48,5 +48,5 @@
 </div> <!-- /.post -->
 
 {% if request.resolver_match.url_name == 'post' %}
-    {% include 'includes/comments.html' with form=form items=items %}
+    {% include 'includes/comments.html' with form=form items=post.comments.all %}
 {% endif %}

@@ -6,18 +6,24 @@ from django.views import View
 from django.views.decorators.cache import cache_page
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
-from .forms import CommentForm, PostForm
-from .mixins import (
+from posts.forms import CommentForm, PostForm
+from posts.mixins import (
     PaginatorMixin,
     PytestGetMixin,
     PytestMixin,
     SameUserFollowMixin,
     UserIsFollowerMixin,
 )
-from .models import Comment, Follow, Group, Post, User
+from posts.models import Comment, Follow, Group, Post, User
 
 
-@method_decorator(cache_page(20, key_prefix='index_page'), name='dispatch')
+_CACHE_TIMEOUT = 20
+
+
+@method_decorator(
+    cache_page(_CACHE_TIMEOUT, key_prefix='index_page'),
+    name='dispatch',
+)
 class IndexListView(PytestMixin, ListView):
     """Главная страница."""
 
@@ -33,9 +39,9 @@ class PostDetailView(UserIsFollowerMixin, DetailView):
     template_name = 'post.html'
 
     def get_context_data(self, **kwargs):
-        data = super().get_context_data(**kwargs)
-        data['form'] = CommentForm(self.request.POST or None)
-        return data
+        context = super().get_context_data(**kwargs)
+        context['form'] = CommentForm(self.request.POST or None)
+        return context
 
 
 class GroupView(PaginatorMixin, DetailView):
@@ -110,8 +116,12 @@ class FollowIndexView(LoginRequiredMixin, PytestMixin, ListView):
         return Post.objects.filter(author__following__user=self.request.user)
 
 
-class ProfileFollowView(LoginRequiredMixin, PytestGetMixin, SameUserFollowMixin,
-                        View):
+class ProfileFollowView(
+    LoginRequiredMixin,
+    PytestGetMixin,
+    SameUserFollowMixin,
+    View,
+):
     """Подписка на автора."""
 
     def post(self, request, *args, **kwargs):
@@ -120,8 +130,12 @@ class ProfileFollowView(LoginRequiredMixin, PytestGetMixin, SameUserFollowMixin,
         return redirect('follow_index')
 
 
-class ProfileUnfollowView(LoginRequiredMixin, PytestGetMixin,
-                          SameUserFollowMixin, View):
+class ProfileUnfollowView(
+    LoginRequiredMixin,
+    PytestGetMixin,
+    SameUserFollowMixin,
+    View,
+):
     """Отписка от автора."""
 
     def post(self, request, *args, **kwargs):

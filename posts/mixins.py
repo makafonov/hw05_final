@@ -4,7 +4,7 @@ from django.shortcuts import redirect
 from posts.models import User
 
 
-class SameUserFollowMixin:
+class SameUserFollowMixin(object):
     """Проверка подписки на самого себя."""
 
     def dispatch(self, request, *args, **kwargs):
@@ -16,7 +16,7 @@ class SameUserFollowMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
-class PytestMixin:
+class PytestMixin(object):
     """Миксин для pytest'a :). Без него всё работает, но тесты практикума
     не проходят."""
 
@@ -27,7 +27,7 @@ class PytestMixin:
         return context
 
 
-class PytestGetMixin:
+class PytestGetMixin(object):
     """Перенаправление GET запроса для подписки/отписки, pytest отправляет GET
     запрос."""
 
@@ -35,7 +35,7 @@ class PytestGetMixin:
         return self.post(request, *args, **kwargs)
 
 
-class UserIsFollowerMixin:
+class UserIsFollowerMixin(object):
     """Добавление в контекст флага 'following' (является ли пользователь
     подписчиком)."""
 
@@ -53,7 +53,7 @@ class UserIsFollowerMixin:
         }
 
 
-class PaginatorMixin:
+class PaginatorMixin(object):
     """Паджинатор постов."""
 
     def get_context_data(self, *, object_list=None, **kwargs):

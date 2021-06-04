@@ -1,14 +1,15 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import F, Q
 from django.urls import reverse
 
+
+_TITLE_MAX_LENGTH = 200
 
 User = get_user_model()
 
 
 class Group(models.Model):
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=_TITLE_MAX_LENGTH)
     slug = models.SlugField(unique=True)
     description = models.TextField()
 
@@ -40,7 +41,7 @@ class Post(models.Model):
         upload_to='posts/', blank=True, null=True, verbose_name='Изображение',
     )
 
-    class Meta:
+    class Meta(object):
         ordering = ['-pub_date']
 
     def __str__(self):
@@ -65,10 +66,11 @@ class Comment(models.Model):
 
     def get_absolute_url(self):
         return reverse(
-            'post', kwargs={
+            'post',
+            kwargs={
                 'pk': self.post.pk,
-                'username': self.post.author
-            }
+                'username': self.post.author,
+            },
         )
 
 
@@ -80,14 +82,14 @@ class Follow(models.Model):
         User, on_delete=models.CASCADE, related_name='following',
     )
 
-    class Meta:
+    class Meta(object):
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'author'],
                 name='unique_user_author',
             ),
             models.CheckConstraint(
-                check=~Q(user=F('author')),
+                check=~models.Q(user=models.F('author')),
                 name='user_not_author',
             ),
         ]

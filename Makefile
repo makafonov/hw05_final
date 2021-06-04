@@ -1,11 +1,14 @@
-install:
-	poetry install
+.env:
+	@test ! -f .env && cp .env.example .env
+
+install: .env
+	poetry install --no-dev
 
 lint:
-	poetry run flake8 yatube
+	poetry run flake8 .
 
 coverage:
-	poetry run pytest --cov=yatube --cov-report xml tests/
+	poetry run pytest --cov=posts --cov-report xml tests/
 
 pytest:
 	poetry run pytest -vv

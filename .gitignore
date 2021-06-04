@@ -14,3 +14,4 @@ posts/static/fonts
 media/
 
 db.sqlite3
+.env

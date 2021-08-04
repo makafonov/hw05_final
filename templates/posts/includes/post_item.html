@@ -48,5 +48,5 @@
 </div> <!-- /.post -->
 
 {% if request.resolver_match.url_name == 'post' %}
-    {% include 'includes/comments.html' with form=form items=post.comments.all %}
+    {% include 'posts/includes/comments.html' with form=form items=post.comments.all %}
 {% endif %}

@@ -28,7 +28,7 @@ class IndexListView(PytestMixin, ListView):
     """Главная страница."""
 
     model = Post
-    template_name = 'index.html'
+    template_name = 'posts/index.html'
     paginate_by = 10
 
 
@@ -36,7 +36,7 @@ class PostDetailView(UserIsFollowerMixin, DetailView):
     """Просмотр одного поста."""
 
     model = Post
-    template_name = 'post.html'
+    template_name = 'posts/post.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -48,14 +48,14 @@ class GroupView(PaginatorMixin, DetailView):
     """Страница группы."""
 
     model = Group
-    template_name = 'group.html'
+    template_name = 'posts/group.html'
 
 
 class NewPostCreateView(LoginRequiredMixin, CreateView):
     """Добавление нового поста."""
 
     model = Post
-    template_name = 'new_post.html'
+    template_name = 'posts/new_post.html'
     form_class = PostForm
     success_url = reverse_lazy('index')
 
@@ -69,7 +69,7 @@ class ProfileView(PaginatorMixin, UserIsFollowerMixin, DetailView):
     """Профиль пользователя."""
 
     model = User
-    template_name = 'profile.html'
+    template_name = 'posts/profile.html'
     slug_field = 'username'
     slug_url_kwarg = 'username'
 
@@ -78,7 +78,7 @@ class PostEditView(LoginRequiredMixin, UpdateView):
     """Редактирование поста."""
 
     model = Post
-    template_name = 'new_post.html'
+    template_name = 'posts/new_post.html'
     form_class = PostForm
     extra_context = {'is_created': True}
 
@@ -108,7 +108,7 @@ class AddCommentView(LoginRequiredMixin, CreateView):
 class FollowIndexView(LoginRequiredMixin, PytestMixin, ListView):
     """Избранные авторы. Главная страница."""
 
-    template_name = 'follow.html'
+    template_name = 'posts/follow.html'
     paginate_by = 10
     extra_context = {'follow': True}
 

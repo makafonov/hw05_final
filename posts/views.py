@@ -1,5 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
@@ -18,7 +18,8 @@ from posts.models import Comment, Follow, Group, Post, User
 
 
 _CACHE_TIMEOUT = 20
-
+_HTTP404 = 404
+_HTTP500 = 500
 
 @method_decorator(
     cache_page(_CACHE_TIMEOUT, key_prefix='index_page'),
@@ -142,3 +143,16 @@ class ProfileUnfollowView(
         author = get_object_or_404(User, username=kwargs['username'])
         request.user.follower.filter(author=author).delete()
         return redirect('follow_index')
+
+
+def page_not_found(request, exception):
+    return render(
+        request,
+        'misc/404.html',
+        {'path': request.path},
+        status=_HTTP404,
+    )
+
+
+def server_error(request):
+    return render(request, 'misc/500.html', status=_HTTP500)

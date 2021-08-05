@@ -1,4 +1,4 @@
-{% extends 'signup.html' %}
+{% extends 'base.html' %}
 {% block title %}Добавить новую запись{% endblock title %}
 {% block content %}
 <div class="container content">
@@ -23,7 +23,7 @@
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     {% for field in form %}
-                        <div class="form-group row">
+                        <div class="form-group row my-3">
                             <label for="{{ field.id_for_label }}" class="col-md-4 col-form-label text-md-right">
                                 {{ field.label }}
                                 {% if field.field.required %}

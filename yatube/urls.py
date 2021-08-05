@@ -11,7 +11,7 @@ handler404 = 'posts.views.page_not_found'  # noqa: WPS440, F811
 handler500 = 'posts.views.server_error'  # noqa: WPS440, F811
 
 urlpatterns = [
-    path('auth/', include('users.urls')),
+    path('auth/', include('users.urls', namespace='users')),
     path('auth/', include('django.contrib.auth.urls')),
     path('admin/', admin.site.urls),
 ]

@@ -6,13 +6,13 @@
                     <ul>
                         <li>Пользователь: <a href="{% url 'posts:profile' username=user.username %}">{{ user.username }}</a></li>
                         <li class="sep"><a href="{% url 'posts:new_post' %}">Новая запись</a></li>
-                        <li class="dblsep"><a href="{% url 'password_change' %}">Изменить пароль</a></li>
-                        <li class="sep"><a href="{% url 'logout' %}">Выйти</a></li>
+                        <li class="dblsep"><a href="{% url 'users:password_change' %}">Изменить пароль</a></li>
+                        <li class="sep"><a href="{% url 'users:logout' %}">Выйти</a></li>
                     </ul>
                 {% else %}
                     <ul>
                         <li><a href="{% url 'login' %}">Войти</a></li>
-                        <li class="sep"><a href="{% url 'signup' %}">Регистрация</a></li>
+                        <li class="sep"><a href="{% url 'users:signup' %}">Регистрация</a></li>
                     </ul>
                 {% endif %}
             </div>
@@ -30,8 +30,11 @@
                     <li class="nav-item"><a class="nav-link" href="#">Программирование</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Администрирование</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'contacts' %}">Контакты</a></li>
-                    <li class="nav-item"><a class="nav-link last-link" href="#"><i class="fa fa-search"
-                                aria-hidden="true"></i></a></li>
+                    <li class="nav-item">
+                        <a class="nav-link last-link" href="#">
+                            <i class="fa fa-search" aria-hidden="true"></i>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>

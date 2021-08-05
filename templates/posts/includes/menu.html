@@ -1,10 +1,10 @@
 {% if user.is_authenticated %}
 <div class="content-header-nav d-flex">
     <div {% if index %}class="active-tab"{% endif %}>
-        <a href="{% url 'index' %}">Все авторы</a>
+        <a href="{% url 'posts:index' %}">Все авторы</a>
     </div>
     <div {% if follow %}class="active-tab"{% endif %}>
-        <a href="{% url 'follow_index' %}">Избранные авторы</a>
+        <a href="{% url 'posts:follow_index' %}">Избранные авторы</a>
     </div>
 </div>
 {% endif %}

@@ -21,6 +21,7 @@ _CACHE_TIMEOUT = 20
 _HTTP404 = 404
 _HTTP500 = 500
 
+
 @method_decorator(
     cache_page(_CACHE_TIMEOUT, key_prefix='index_page'),
     name='dispatch',

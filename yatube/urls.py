@@ -28,7 +28,7 @@ urlpatterns += [
 ]
 
 urlpatterns += [
-    path('', include('posts.urls')),
+    path('', include('posts.urls', namespace='posts')),
 ]
 
 if settings.DEBUG:

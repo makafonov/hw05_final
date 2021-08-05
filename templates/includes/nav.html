@@ -4,8 +4,8 @@
             <div class="col-12 d-flex justify-content-end">
                 {% if user.is_authenticated %}
                     <ul>
-                        <li>Пользователь: <a href="{% url 'profile' username=user.username %}">{{ user.username }}</a></li>
-                        <li class="sep"><a href="{% url 'new_post' %}">Новая запись</a></li>
+                        <li>Пользователь: <a href="{% url 'posts:profile' username=user.username %}">{{ user.username }}</a></li>
+                        <li class="sep"><a href="{% url 'posts:new_post' %}">Новая запись</a></li>
                         <li class="dblsep"><a href="{% url 'password_change' %}">Изменить пароль</a></li>
                         <li class="sep"><a href="{% url 'logout' %}">Выйти</a></li>
                     </ul>
@@ -22,11 +22,11 @@
     <nav class="navbar navbar-expand-md navbar-custom">
         <div class="container">
             <div class="navbar-logo">
-                <a href="{% url 'index' %}" class="d-flex">Ya<span>tube</span></a>
+                <a href="{% url 'posts:index' %}" class="d-flex">Ya<span>tube</span></a>
             </div>
             <div class="navbar-collapse collapse w-100">
                 <ul class="nav navbar-nav ml-auto w-100 justify-content-end">
-                    <li class="nav-item"><a class="nav-link" href="{% url 'index' %}">Блог</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'posts:index' %}">Блог</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Программирование</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Администрирование</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'contacts' %}">Контакты</a></li>

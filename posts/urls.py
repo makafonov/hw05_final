@@ -3,6 +3,8 @@ from django.urls import path
 from posts import views
 
 
+app_name = 'posts'
+
 urlpatterns = [
     path('', views.IndexListView.as_view(), name='index'),
     path('new/', views.NewPostCreateView.as_view(), name='new_post'),

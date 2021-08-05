@@ -7,13 +7,13 @@
     <div class="post_info d-flex">
         <!-- Автор поста -->
         <div class="post_author">
-            <a href="{% url 'profile' username=post.author.username %}">@{{ post.author.username }}</a>
+            <a href="{% url 'posts:profile' username=post.author.username %}">@{{ post.author.username }}</a>
         </div>
         <!-- Дата поста -->
         <div class="post_date">{{ post.pub_date|date:'d E Y г. G:i' }}</div>
     </div>
     <!-- Заголовог поста -->
-    <h2><a href="{% url 'post' username=post.author.username pk=post.id %}">{{ post.get_header }}</a></h2>
+    <h2><a href="{% url 'posts:post' username=post.author.username pk=post.id %}">{{ post.get_header }}</a></h2>
 
     <div class="post_text">
         <p>{{ post.text|linebreaksbr }}</p>
@@ -23,19 +23,19 @@
         <!-- Если пост относится к какому-нибудь сообществу, то отобразим ссылку на него через # -->
         {% if post.group %}
             <div class="group">
-                <a href="{% url 'group' post.group.slug %}">#{{ post.group.title }}</a>
+                <a href="{% url 'posts:group' post.group.slug %}">#{{ post.group.title }}</a>
             </div>
         {% endif %}
 
         <div class="post_footer_end d-flex">
             <!-- Ссылка на редактирование поста для автора -->
             {% if user == post.author %}
-                <div class="comments"><a href="{% url 'post_edit' post.author.username post.id %}">редактировать</a></div>
+                <div class="comments"><a href="{% url 'posts:post_edit' post.author.username post.id %}">редактировать</a></div>
             {% endif %}
 
             <!-- Отображение ссылки на комментарии -->
             <div class="add_comment">
-                <a href="{% url 'post' post.author.username post.id %}">
+                <a href="{% url 'posts:post' post.author.username post.id %}">
                     {% if post.comments.exists %}
                         {{ post.comments.count }} комментариев →
                     {% else%}

@@ -10,7 +10,7 @@ class SameUserFollowMixin(object):
     def dispatch(self, request, *args, **kwargs):
         if request.user.username == kwargs['username']:
             return redirect(
-                'profile',
+                'posts:profile',
                 username=kwargs['username'],
             )
         return super().dispatch(request, *args, **kwargs)

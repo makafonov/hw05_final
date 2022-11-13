@@ -59,7 +59,7 @@ class NewPostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     template_name = 'posts/new_post.html'
     form_class = PostForm
-    success_url = reverse_lazy('index')
+    success_url = reverse_lazy('posts:index')
 
     def form_valid(self, form):
         form.instance.author = self.request.user
@@ -87,7 +87,7 @@ class PostEditView(LoginRequiredMixin, UpdateView):
     def dispatch(self, request, *args, **kwargs):
         if self.request.user.username != self.kwargs['username']:
             return redirect(
-                'post',
+                'posts:post',
                 username=self.kwargs['username'],
                 pk=self.kwargs['pk'],
             )
@@ -129,7 +129,7 @@ class ProfileFollowView(
     def post(self, request, *args, **kwargs):
         author = get_object_or_404(User, username=kwargs['username'])
         Follow.objects.get_or_create(user=request.user, author=author)
-        return redirect('follow_index')
+        return redirect('posts:follow_index')
 
 
 class ProfileUnfollowView(
@@ -143,7 +143,7 @@ class ProfileUnfollowView(
     def post(self, request, *args, **kwargs):
         author = get_object_or_404(User, username=kwargs['username'])
         request.user.follower.filter(author=author).delete()
-        return redirect('follow_index')
+        return redirect('posts:follow_index')
 
 
 def page_not_found(request, exception):

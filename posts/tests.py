@@ -62,13 +62,13 @@ class UserTest(TestCase):  # noqa: WPS230, WPS214
         if default:
             post = self.post
         urls = {
-            'index': reverse('index'),
-            'profile': reverse('profile', kwargs={'username': post.author}),
-            'post': reverse('post', kwargs={
+            'index': reverse('posts:index'),
+            'profile': reverse('posts:profile', kwargs={'username': post.author}),
+            'post': reverse('posts:post', kwargs={
                 'username': post.author,
                 'pk': post.id,
             }),
-            'group': reverse('group', kwargs={'slug': self.group.slug}),
+            'group': reverse('posts:group', kwargs={'slug': self.group.slug}),
         }
         if name:
             return urls[name]
@@ -94,7 +94,7 @@ class UserTest(TestCase):  # noqa: WPS230, WPS214
         """Авторизованный пользователь может опубликовать пост (new)."""
 
         response = self.client.post(
-            reverse('new_post'),
+            reverse('posts:new_post'),
             data={'text': 'Поехали!', 'group': self.group.id},
             follow=True,
         )
@@ -117,14 +117,14 @@ class UserTest(TestCase):  # noqa: WPS230, WPS214
         """
 
         response = self.anon_client.post(
-            reverse('new_post'),
+            reverse('posts:new_post'),
             data={'text': 'Поехали!'},
             follow=True,
         )
         self.assertEqual(Post.objects.count(), 1)
         url = urljoin(
-            reverse('login'),
-            '?next={0}'.format(reverse('new_post')),
+            reverse('users:login'),
+            '?next={0}'.format(reverse('posts:new_post')),
         )
         self.assertRedirects(
             response,
@@ -154,7 +154,7 @@ class UserTest(TestCase):  # noqa: WPS230, WPS214
 
         modded_text = 'Измененный пост'
         post_edit_url = reverse(
-            'post_edit',
+            'posts:post_edit',
             kwargs={'username': self.post.author, 'pk': self.post.id},
         )
         self.client.post(
@@ -164,7 +164,7 @@ class UserTest(TestCase):  # noqa: WPS230, WPS214
         )
 
         for url in self.generate_urls_for_tests().values():
-            if url == reverse('index'):
+            if url == reverse('posts:index'):
                 cache.clear()
             response = self.client.get(url)
             msg = 'Измененный текст не найден на странице {0}. CACHE = {1}'
@@ -191,14 +191,14 @@ class UserTest(TestCase):  # noqa: WPS230, WPS214
             'image': create_test_image_file(),
         }
         response = self.client.post(
-            reverse('new_post'),
+            reverse('posts:new_post'),
             data=payload,
             follow=True,
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response.resolver_match.view_name,
-            'index',
+            'posts:index',
             msg='Пост не создался',
         )
         self.assertEqual(Post.objects.all().count(), 2)
@@ -209,7 +209,7 @@ class UserTest(TestCase):  # noqa: WPS230, WPS214
             post=latest_post,
         ).values()
         for url in urls:
-            if url == reverse('index'):
+            if url == reverse('posts:index'):
                 cache.clear()
             img = get_thumbnail(
                 latest_post.image,
@@ -229,14 +229,14 @@ class UserTest(TestCase):  # noqa: WPS230, WPS214
             'image': text_file,
         }
         response = self.client.post(
-            reverse('new_post'),
+            reverse('posts:new_post'),
             data=payload,
             follow=True,
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response.resolver_match.view_name,
-            'new_post',
+            'posts:new_post',
             'Пост создался',
         )
         self.assertIsInstance(response.context['form'].errors, dict)
@@ -245,16 +245,16 @@ class UserTest(TestCase):  # noqa: WPS230, WPS214
     def test_cache_is_working(self):
         """Проверка работы кэша."""
 
-        response = self.client.get(reverse('index'))
+        response = self.client.get(reverse('posts:index'))
         self.assertEqual(response.status_code, 200)
         text = 'Кэш есть'
         response = self.client.post(
-            reverse('new_post'),
+            reverse('posts:new_post'),
             data={'text': text},
             follow=True,
         )
         self.assertEqual(response.status_code, 200)
-        response = self.client.get(reverse('index'))
+        response = self.client.get(reverse('posts:index'))
         self.assertNotContains(response, text, status_code=200)
 
     def test_authorized_user_create_comment(self):
@@ -263,7 +263,7 @@ class UserTest(TestCase):  # noqa: WPS230, WPS214
         self.assertEqual(Comment.objects.all().count(), 0)
         comment = 'Комментарий'
         comment_url = reverse(
-            'add_comment',
+            'posts:add_comment',
             kwargs={'username': self.post.author, 'pk': self.post.id},
         )
         response = self.client.post(
@@ -281,7 +281,7 @@ class UserTest(TestCase):  # noqa: WPS230, WPS214
 
         comment = 'Комментарий'
         comment_url = reverse(
-            'add_comment',
+            'posts:add_comment',
             kwargs={'username': self.post.author, 'pk': self.post.id},
         )
         response = self.anon_client.post(
@@ -290,7 +290,7 @@ class UserTest(TestCase):  # noqa: WPS230, WPS214
             follow=True,
         )
         redirect_url = urljoin(
-            reverse('login'),
+            reverse('users:login'),
             '?next={0}'.format(comment_url),
         )
         self.assertRedirects(
@@ -309,7 +309,7 @@ class UserTest(TestCase):  # noqa: WPS230, WPS214
         """Авторизованный пользователь может подписываться на других."""
 
         self.assertEqual(self.follower.follower.all().count(), 0)
-        follow_url = reverse('profile_follow', kwargs={'username': self.user})
+        follow_url = reverse('posts:profile_follow', kwargs={'username': self.user})
         response = self.follower_client.post(follow_url, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.follower.follower.all().count(), 1)
@@ -320,7 +320,7 @@ class UserTest(TestCase):  # noqa: WPS230, WPS214
         Follow.objects.create(user=self.follower, author=self.user)
         self.assertEqual(self.follower.follower.all().count(), 1)
         unfollow_url = reverse(
-            'profile_unfollow',
+            'posts:profile_unfollow',
             kwargs={'username': self.user},
         )
         response = self.follower_client.post(unfollow_url, follow=True)
@@ -336,7 +336,7 @@ class UserTest(TestCase):  # noqa: WPS230, WPS214
 
         Follow.objects.create(user=self.follower, author=self.user)
         self.assertEqual(self.follower.follower.all().count(), 1)
-        response = self.follower_client.get(reverse('follow_index'))
+        response = self.follower_client.get(reverse('posts:follow_index'))
         self.assertEqual(response.status_code, 200)
         self.assertIn('paginator', response.context)
         self.assertEqual(response.context['paginator'].count, 1)
@@ -349,7 +349,7 @@ class UserTest(TestCase):  # noqa: WPS230, WPS214
         подписан на него.
         """
 
-        response = self.follower_client.get(reverse('follow_index'))
+        response = self.follower_client.get(reverse('posts:follow_index'))
         self.assertEqual(response.status_code, 200)
         self.assertIn('paginator', response.context)
         self.assertEqual(response.context['paginator'].count, 0)

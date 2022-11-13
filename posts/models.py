@@ -51,7 +51,7 @@ class Post(models.Model):
         return ' '.join(self.text.split()[:5])
 
     def get_absolute_url(self):
-        return reverse('post', kwargs={'pk': self.pk, 'username': self.author})
+        return reverse('posts:post', kwargs={'pk': self.pk, 'username': self.author})
 
 
 class Comment(models.Model):
@@ -66,7 +66,7 @@ class Comment(models.Model):
 
     def get_absolute_url(self):
         return reverse(
-            'post',
+            'posts:post',
             kwargs={
                 'pk': self.post.pk,
                 'username': self.post.author,

@@ -14,7 +14,7 @@ python-dotenv = "^0.17"
 
 [tool.poetry.dev-dependencies]
 rope = "^0.19"
-wemake-python-styleguide = "^0.15"
+wemake-python-styleguide = "^0.17"
 yapf = "^0.31"
 django-debug-toolbar = "^3.2"
 pytest = "^6.2"

@@ -7,8 +7,8 @@ from django.urls import include, path, re_path
 from django.views.static import serve
 
 
-handler404 = 'posts.views.page_not_found'  # noqa: WPS440, F811
-handler500 = 'posts.views.server_error'  # noqa: WPS440, F811
+handler404 = 'core.views.page_not_found'  # noqa: WPS440, F811
+handler500 = 'core.views.server_error'  # noqa: WPS440, F811
 
 urlpatterns = [
     path('auth/', include('users.urls', namespace='users')),

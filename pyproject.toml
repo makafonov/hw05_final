@@ -6,15 +6,15 @@ authors = ["Denis S. <makafonov@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.8.1"
 Django = "^2.2"
 sorl-thumbnail = "^12.6"
 Pillow = "^10.1"
 python-dotenv = "^0.17"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 rope = "^0.19"
-wemake-python-styleguide = "^0.17"
+wemake-python-styleguide = "~0"
 yapf = "^0.31"
 django-debug-toolbar = "^3.2"
 pytest = "^6.2"

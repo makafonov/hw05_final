@@ -9,7 +9,7 @@ license = "MIT"
 python = "^3.8"
 Django = "^2.2"
 sorl-thumbnail = "^12.6"
-Pillow = "^9.2"
+Pillow = "^10.1"
 python-dotenv = "^0.17"
 
 [tool.poetry.dev-dependencies]

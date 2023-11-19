@@ -1,7 +1,7 @@
 from django.views.generic import DetailView
 
-from posts.mixins import PaginatorMixin
-from posts.models import Group
+from apps.posts.mixins import PaginatorMixin
+from apps.posts.models import Group
 
 
 class GroupView(PaginatorMixin, DetailView):

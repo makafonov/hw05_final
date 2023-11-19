@@ -3,8 +3,8 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django.views.generic import ListView
 
-from posts.mixins import PytestGetMixin, PytestMixin, SameUserFollowMixin
-from posts.models import Follow, Post, User
+from apps.posts.mixins import PytestGetMixin, PytestMixin, SameUserFollowMixin
+from apps.posts.models import Follow, Post, User
 
 
 class FollowIndexView(LoginRequiredMixin, PytestMixin, ListView):
@@ -18,7 +18,7 @@ class FollowIndexView(LoginRequiredMixin, PytestMixin, ListView):
         return Post.objects.filter(author__following__user=self.request.user)
 
 
-class ProfileFollowView(
+class ProfileFollowView(  # noqa: WPS215
     LoginRequiredMixin,
     PytestGetMixin,
     SameUserFollowMixin,
@@ -32,7 +32,7 @@ class ProfileFollowView(
         return redirect('posts:follow_index')
 
 
-class ProfileUnfollowView(
+class ProfileUnfollowView(  # noqa: WPS215
     LoginRequiredMixin,
     PytestGetMixin,
     SameUserFollowMixin,

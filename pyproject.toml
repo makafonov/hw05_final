@@ -17,7 +17,7 @@ rope = "^0.19"
 wemake-python-styleguide = "~0"
 yapf = "^0.31"
 django-debug-toolbar = "^3.2"
-pytest = "^6.2"
+pytest = "^7.4.3"
 pytest-cov = "^2.12"
 pytest-django = "^4.3"
 
@@ -32,7 +32,8 @@ include_trailing_comma = true
 use_parentheses = true
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "yatube.settings"
+pythonpath = "src"
+DJANGO_SETTINGS_MODULE = "config.settings"
 norecursedirs = ".git __pycache__ .venv"
 addopts = "-vv -p no:cacheprovider --strict-markers"
 testpaths = "tests/"

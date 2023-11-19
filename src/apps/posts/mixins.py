@@ -1,7 +1,10 @@
 from django.core.paginator import Paginator
 from django.shortcuts import redirect
 
-from posts.models import User
+from apps.posts.models import User
+
+
+_PAGE_PARAM = 'page'
 
 
 class SameUserFollowMixin(object):
@@ -21,9 +24,9 @@ class PytestMixin(object):
     не проходят."""
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        page_number = self.request.GET.get('page')
+        page_number = self.request.GET.get(_PAGE_PARAM)
         context = super().get_context_data(object_list=object_list, **kwargs)
-        context['page'] = context['paginator'].get_page(page_number)
+        context[_PAGE_PARAM] = context['paginator'].get_page(page_number)
         return context
 
 
@@ -60,7 +63,7 @@ class PaginatorMixin(object):
         context = super().get_context_data(object_list=object_list, **kwargs)
         posts = context['object'].posts.all()
         paginator = Paginator(posts, 10)
-        page_number = self.request.GET.get('page')
-        context['page'] = paginator.get_page(page_number)
+        page_number = self.request.GET.get(_PAGE_PARAM)
+        context[_PAGE_PARAM] = paginator.get_page(page_number)
         context['paginator'] = paginator
         return context

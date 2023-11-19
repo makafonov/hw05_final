@@ -9,12 +9,16 @@ from django.urls import reverse
 from PIL import Image
 from sorl.thumbnail import get_thumbnail
 
-from posts.models import Comment, Follow, Group, Post, User
+from apps.posts.models import Comment, Follow, Group, Post, User
 
 
 def create_test_image_file():
     binary_stream = BytesIO()
-    image = Image.new('RGBA', size=(100, 100), color=(155, 0, 0))
+    image = Image.new(
+        'RGBA',
+        size=(100, 100),
+        color=(155, 0, 0),
+    )
     image.save(binary_stream, 'png')
     binary_stream.name = 'test.png'
     binary_stream.seek(0)
@@ -185,14 +189,13 @@ class UserTest(TestCase):  # noqa: WPS230, WPS214
     def test_page_with_image(self):
         """На страницах есть тэг img."""
 
-        payload = {
-            'group': self.group.id,
-            'text': 'post with image',
-            'image': create_test_image_file(),
-        }
         response = self.client.post(
             reverse('posts:new_post'),
-            data=payload,
+            data={
+                'group': self.group.id,
+                'text': 'post with image',
+                'image': create_test_image_file(),
+            },
             follow=True,
         )
         self.assertEqual(response.status_code, 200)

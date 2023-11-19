@@ -4,7 +4,7 @@ import pytest
 from PIL import Image
 from django import forms
 from django.core.files.base import File
-from posts.models import Post
+from apps.posts.models import Post
 
 
 class TestNewView:

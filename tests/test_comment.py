@@ -5,12 +5,12 @@ from django.contrib.auth import get_user_model
 from django.db.models import fields
 
 try:
-    from posts.models import Comment
+    from apps.posts.models import Comment
 except ImportError:
     assert False, 'Не найдена модель Comment'
 
 try:
-    from posts.models import Post
+    from apps.posts.models import Post
 except ImportError:
     assert False, 'Не найдена модель Post'
 

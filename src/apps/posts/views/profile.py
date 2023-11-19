@@ -1,7 +1,7 @@
 from django.views.generic import DetailView
 
-from posts.mixins import PaginatorMixin, UserIsFollowerMixin
-from posts.models import User
+from apps.posts.mixins import PaginatorMixin, UserIsFollowerMixin
+from apps.posts.models import User
 
 
 class ProfileView(PaginatorMixin, UserIsFollowerMixin, DetailView):

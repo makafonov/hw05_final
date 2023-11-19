@@ -7,12 +7,12 @@ from django.core.paginator import Paginator, Page
 from django.db.models import fields
 
 try:
-    from posts.models import Post
+    from apps.posts.models import Post
 except ImportError:
     assert False, 'Не найдена модель Post'
 
 try:
-    from posts.models import Follow
+    from apps.posts.models import Follow
 except ImportError:
     assert False, 'Не найдена модель Follow'
 

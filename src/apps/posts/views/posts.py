@@ -5,9 +5,9 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
-from posts.forms import CommentForm, PostForm
-from posts.mixins import PytestMixin, UserIsFollowerMixin
-from posts.models import Post
+from apps.posts.forms import CommentForm, PostForm
+from apps.posts.mixins import PytestMixin, UserIsFollowerMixin
+from apps.posts.models import Post
 
 
 _CACHE_TIMEOUT = 20

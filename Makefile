@@ -1,23 +1,25 @@
+manage = poetry run python src/manage.py
+
 .env:
 	@test ! -f .env && cp .env.example .env
 
 install: .env
-	poetry install --no-dev
+	@poetry install --no-dev
 
 lint:
-	poetry run flake8 .
+	@poetry run flake8 src/
 
 coverage:
-	poetry run pytest --cov=posts --cov-report xml tests/
+	@poetry run pytest --cov=posts --cov-report xml tests/
 
 pytest:
-	poetry run pytest -vv
+	@poetry run pytest
 
 unittest:
-	poetry run python manage.py test
+	@$(manage) test src
 
 migrate:
-	poetry run python manage.py migrate
+	@$(manage) migrate
 
-start: migrate
-	poetry run python manage.py runserver 0.0.0.0:8000
+run:
+	@$(manage) runserver

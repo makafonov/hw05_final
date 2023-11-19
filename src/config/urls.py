@@ -7,11 +7,11 @@ from django.urls import include, path, re_path
 from django.views.static import serve
 
 
-handler404 = 'core.views.page_not_found'  # noqa: WPS440, F811
-handler500 = 'core.views.server_error'  # noqa: WPS440, F811
+handler404 = 'apps.core.views.page_not_found'  # noqa: WPS440, F811
+handler500 = 'apps.core.views.server_error'  # noqa: WPS440, F811
 
 urlpatterns = [
-    path('auth/', include('users.urls', namespace='users')),
+    path('auth/', include('apps.users.urls', namespace='users')),
     path('auth/', include('django.contrib.auth.urls')),
     path('admin/', admin.site.urls),
 ]
@@ -25,11 +25,9 @@ urlpatterns += [
     ),
     path('about-spec/', views.flatpage, {'url': '/about-spec/'}, name='spec'),
     path('contacts/', views.flatpage, {'url': '/contacts/'}, name='contacts'),
+    path('', include('apps.posts.urls', namespace='posts')),
 ]
 
-urlpatterns += [
-    path('', include('posts.urls', namespace='posts')),
-]
 
 if settings.DEBUG:
     import debug_toolbar  # noqa: WPS433

@@ -1,19 +1,19 @@
 from django.urls import path
 
-from posts.views.comments import AddCommentView
-from posts.views.follow import (
+from apps.posts.views.comments import AddCommentView
+from apps.posts.views.follow import (
     FollowIndexView,
     ProfileFollowView,
     ProfileUnfollowView,
 )
-from posts.views.groups import GroupView
-from posts.views.posts import (
+from apps.posts.views.groups import GroupView
+from apps.posts.views.posts import (
     IndexListView,
     NewPostCreateView,
     PostDetailView,
     PostEditView,
 )
-from posts.views.profile import ProfileView
+from apps.posts.views.profile import ProfileView
 
 
 app_name = 'posts'

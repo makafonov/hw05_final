@@ -1,8 +1,8 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView
 
-from posts.forms import CommentForm
-from posts.models import Comment
+from apps.posts.forms import CommentForm
+from apps.posts.models import Comment
 
 
 class AddCommentView(LoginRequiredMixin, CreateView):

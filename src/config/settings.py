@@ -21,9 +21,9 @@ ALLOWED_HOSTS = (
 
 # Application definition
 INSTALLED_APPS = (
-    'core',
-    'users',
-    'posts',
+    'apps.core',
+    'apps.users',
+    'apps.posts',
     'django.contrib.sites',
     'django.contrib.flatpages',
     'django.contrib.admin',
@@ -54,7 +54,7 @@ if DEBUG:
     ) + MIDDLEWARE
 
 
-ROOT_URLCONF = 'yatube.urls'
+ROOT_URLCONF = 'config.urls'
 
 TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 TEMPLATES = [  # noqa: WPS407
@@ -73,7 +73,7 @@ TEMPLATES = [  # noqa: WPS407
     },
 ]
 
-WSGI_APPLICATION = 'yatube.wsgi.application'
+WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # Database

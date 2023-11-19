@@ -7,6 +7,7 @@ max-line-length = 120
 doctests = True
 enable-extensions = G
 isort-show-traceback = True
+count = True
 
 ignore =
   D,
@@ -21,4 +22,7 @@ exclude =
 
 per-file-ignores =
   # Allow magic numbers for tests:
-  posts/tests.py: WPS226, WPS432
+  */tests.py: WPS226, WPS432
+  */server/settings.py: WPS226, WPS407, WPS412, WPS432
+  # Tests have some more freedom:
+  tests/*.py: S101,

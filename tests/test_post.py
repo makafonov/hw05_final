@@ -5,7 +5,7 @@ from PIL import Image
 from django import forms
 from django.contrib.auth import get_user_model
 from django.core.files.base import File
-from posts.models import Post
+from apps.posts.models import Post
 from django.db.models.query import QuerySet
 
 def get_field_context(context, field_type):
@@ -37,7 +37,7 @@ class TestPostView:
             'Проверьте, что передали статью в контекст страницы `/<username>/<post_id>/` типа `Post`'
 
         try:
-            from posts.forms import CommentForm
+            from apps.posts.forms import CommentForm
         except ImportError:
             assert False, 'Не найдена форма CommentForm в posts.form'
 
